@@ -1,0 +1,33 @@
+{
+  "name": "dcd-model",
+  "version": "0.0.1",
+  "description": "Model of the Data-Centric-Design Hub",
+  "main": "index.js",
+  "scripts": {
+    "test-auth": "NODE_ENV=test KAFKA=true MODEL_HOST=localhost LOG_LEVEL=DEBUG API_URL=http://localhost:8080 KETO_URL=http://localhost:4466 HYDRA_URL=http://localhost:4444 OAUTH2_TOKEN_URL=http://localhost:4444/oauth2/token OAUTH2_CLIENT_ID=dcd-http-api OAUTH2_CLIENT_SECRET=introspection-secret mocha 'tests/*.test.js'",
+    "test-mysql": "NODE_ENV=test KAFKA=true MODEL_HOST=localhost LOG_LEVEL=DEBUG CRYPTO_KEY=cryptoKeyToChange node 'tests/MySQL.test.js'",
+    "test-service": "NODE_ENV=test KAFKA=true MODEL_HOST=localhost LOG_LEVEL=DEBUG CRYPTO_KEY=cryptoKeyToChange API_URL=http://localhost:8080 KETO_URL=http://localhost:4466 HYDRA_URL=http://localhost:4444 OAUTH2_TOKEN_URL=http://localhost:4444/oauth2/token OAUTH2_CLIENT_ID=dcd-http-api OAUTH2_CLIENT_SECRET=introspection-secret node 'tests/Service.test.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datacentricdesign/dcd-model.git"
+  },
+  "author": "Jacky Bourgeois",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/datacentricdesign/dcd-model/issues"
+  },
+  "homepage": "https://github.com/datacentricdesign/dcd-model#README",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "jsonwebtoken": "^8.4.0",
+    "jwk-to-pem": "^2.0.0",
+    "kafka-node": "^3.0.1",
+    "log4js": "^3.0.6",
+    "mysql": "^2.16.0",
+    "node-fetch": "^2.3.0",
+    "querystring": "^0.2.0",
+    "simple-oauth2": "^2.2.1",
+    "url": "^0.11.0"
+  }
+}
