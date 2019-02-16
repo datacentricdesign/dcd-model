@@ -59,6 +59,9 @@ class PersonService {
                             return createPersonCRUDPolicy(person.id);
                         })
                         .then(() => {
+                            return grafana.createGlobalUser(person);
+                        })
+                        .then(() => {
                             return grafana.addUserToOrg(person.id, '1');
                         })
                         .then(() => {
