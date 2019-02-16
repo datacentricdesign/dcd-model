@@ -62,9 +62,6 @@ class PersonService {
                             return grafana.createGlobalUser(person);
                         })
                         .then(() => {
-                            return grafana.addUserToOrg(person.id, '1');
-                        })
-                        .then(() => {
                             logger.debug(person.id);
                             return Promise.resolve(person.id);
                         })
