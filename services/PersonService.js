@@ -61,6 +61,9 @@ class PersonService {
                         .then(() => {
                             return grafana.createGlobalUser(person);
                         })
+                        .then((result) => {
+                            return grafana.updateOrgUserRole('1', result.id, 'Editor');
+                        })
                         .then(() => {
                             logger.debug(person.id);
                             return Promise.resolve(person.id);
