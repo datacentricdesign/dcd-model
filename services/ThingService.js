@@ -8,7 +8,6 @@ logger.level = process.env.LOG_LEVEL || 'INFO';
 const policies = require('../lib/policies');
 const idGen = require('../lib/id');
 
-
 class ThingService {
 
     /**

@@ -8,6 +8,9 @@ logger.level = process.env.LOG_LEVEL || 'INFO';
 const Person = require('../entities/Person');
 const policies = require('../lib/policies');
 
+const grafana = require('../lib/grafana');
+grafana.getAPIKey();
+
 class PersonService {
 
     /**
@@ -54,6 +57,9 @@ class PersonService {
                         })
                         .then(() => {
                             return createPersonCRUDPolicy(person.id);
+                        })
+                        .then(() => {
+                            return grafana.addUserToOrg(person.id, '1');
                         })
                         .then(() => {
                             logger.debug(person.id);
