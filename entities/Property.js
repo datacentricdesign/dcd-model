@@ -382,7 +382,7 @@ const Types = {
         ]
     },
     THREE_DIMENSIONS: {
-        name: '3 Dimension',
+        name: '3 Dimensions',
         description: '',
         dimensions: [
             {
@@ -397,6 +397,165 @@ const Types = {
             },
             {
                 name: 'Value3',
+                description: '',
+                unit: ''
+            }
+        ]
+    },
+    FOUR_DIMENSIONS: {
+        name: '4 Dimensions',
+        description: '',
+        dimensions: [
+            {
+                name: 'Value1',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value2',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value3',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value4',
+                description: '',
+                unit: ''
+            }
+        ]
+    },
+    FIVE_DIMENSIONS: {
+        name: '5 Dimensions',
+        description: '',
+        dimensions: [
+            {
+                name: 'Value1',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value2',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value3',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value4',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value5',
+                description: '',
+                unit: ''
+            }
+        ]
+    },
+    SIX_DIMENSIONS: {
+        name: '6 Dimensions',
+        description: '',
+        dimensions: [
+            {
+                name: 'Value1',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value2',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value3',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value4',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value5',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value6',
+                description: '',
+                unit: ''
+            }
+        ]
+    },
+    TWELVE_DIMENSIONS: {
+        name: '12 Dimensions',
+        description: '',
+        dimensions: [
+            {
+                name: 'Value1',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value2',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value3',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value4',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value5',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value6',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value7',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value8',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value9',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value10',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value11',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value12',
                 description: '',
                 unit: ''
             }
