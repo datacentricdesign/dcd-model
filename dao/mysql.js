@@ -425,13 +425,13 @@ class MySQL {
         return this.exec(sql, [entityId, propertyId]).then((results) => {
             if (results.length > 0) {
                 const data = results[0];
-                const property = new Property(data.pname, data.pdesc,
-                    data.ptype, [], data.id);
-                property.registeredAt = data.registered_at.getTime();
+                const dimensions = [];
                 for (let index = 0; index < results.length; index++) {
-                    property.addDimension(
-                        new Dimension(data.name, data.description, data.unit));
+                    dimensions.push(new Dimension(data.name, data.description, data.unit));
                 }
+                const property = new Property(data.pname, data.pdesc,
+                    data.ptype, dimensions, data.id);
+                property.registeredAt = data.registered_at.getTime();
                 return Promise.resolve(property);
             } else {
                 return Promise.reject({code: 404, message: 'Not Found'});

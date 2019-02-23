@@ -19,9 +19,11 @@ class Property {
             this.id = property.id !== undefined
                 ? property.id : idGen.toID(property.name);
 
-            if (property.type !== undefined) {
+            if (property.type !== undefined
+                && (property.dimensions === undefined || property.dimensions.length === 0)) {
                 this.enrichType(property.type);
             }
+            this.type = property.type;
 
             if (property.name !== undefined) {
                 this.name = property.name;
@@ -46,7 +48,10 @@ class Property {
             this.entityId = property.entityId !== undefined
                 ? property.entityId : null;
         } else {
-            this.enrichType(type);
+            if (dimensions.length === 0) {
+                this.enrichType(type);
+            }
+            this.type = type;
             this.id = id !== undefined ? id : idGen.toID(name);
             if (this.name === undefined || name !== '') {
                 this.name = name;
