@@ -25,20 +25,28 @@ class PropertyService {
             .then(() => {
                 // Publish the property to kafka
                 return this.toKafka(property)
-                    .then( () => {
+                    .then(() => {
                         return Promise.resolve(property);
                     })
-                    .catch( (error) => {
+                    .catch((error) => {
                         return Promise.reject(error);
                     });
             })
-            .catch( (error) => {
+            .catch((error) => {
                 return Promise.reject(error);
             });
     }
 
-    read(propertyId) {
-        return this.model.dao.readProperty(propertyId);
+    read(entityId, propertyId, from=undefined, to=undefined) {
+        return this.model.dao.readProperty(entityId, propertyId)
+            .then((property) => {
+                if (from !== undefined && to !== undefined) {
+                    return this.model.dao.readPropertyValues(property, from, to)
+                }
+            })
+            .catch((error) => {
+                return Promise.reject(error);
+            });
     }
 
     /**
@@ -51,7 +59,7 @@ class PropertyService {
                 // Publish the property values to kafka
                 return this.toKafka(property);
             })
-            .catch( (error) => {
+            .catch((error) => {
                 return Promise.reject(error);
             });
     }
@@ -64,14 +72,14 @@ class PropertyService {
         if (property.values === undefined || property.values.length === 0) {
             return Promise.resolve();
         }
-        // return this.model.dao.updatePropertyValues(property)
-        //     .then(() => {
+        return this.model.dao.updatePropertyValues(property)
+            .then(() => {
                 // Publish the property values to kafka
                 return this.valuesToKafka(property.values, property.id);
-            // })
-            // .catch( (error) => {
-            //     return Promise.reject(error);
-            // });
+            })
+            .catch((error) => {
+                return Promise.reject(error);
+            });
     }
 
     /**

@@ -410,18 +410,19 @@ class MySQL {
     }
 
     /**
+     * @param {String} entityId
      * @param {String} propertyId
      * @return {Promise<Property>}
      */
-    readProperty(propertyId) {
+    readProperty(entityId, propertyId) {
         const sql = 'SELECT p.`name` AS \'pname\',' +
             ' p.`description` AS \'pdesc\',' +
             ' p.`type` AS \'ptype\', p.`registered_at`, p.`id`,' +
             ' d.`name`, d.`description`, d.`unit`\n' +
             'FROM `properties` p JOIN `dimensions` d' +
             ' ON p.`index_id` = d.`property_index_id`\n' +
-            'WHERE p.`id` = ?';
-        return this.exec(sql, [propertyId]).then((results) => {
+            'WHERE p.`entity_id` = ? AND  p.`id` = ?';
+        return this.exec(sql, [entityId, propertyId]).then((results) => {
             if (results.length > 0) {
                 const data = results[0];
                 const property = new Property(data.pname, data.pdesc,
