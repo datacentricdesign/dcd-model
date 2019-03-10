@@ -359,6 +359,22 @@ const Types = {
             }
         ]
     },
+    HEART_RATE: {
+        name: 'Heart Rate',
+        description: 'Heart Rate Measurement (HRM)',
+        dimensions: [
+            {
+                name: 'Heart Rate',
+                description: 'Heart rate in beats per minutes',
+                unit: 'BPM'
+            },
+            {
+                name: 'RR-Interval',
+                description: 'RR-Interval in seconds',
+                unit: 's'
+            }
+        ]
+    },
     ONE_DIMENSION: {
         name: '1 Dimension',
         description: '',
