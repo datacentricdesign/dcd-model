@@ -359,6 +359,28 @@ const Types = {
             }
         ]
     },
+    CLASS: {
+        name: 'Class',
+        description: '',
+        dimensions: [
+            {
+                name: 'Class',
+                description: 'Values of this dimension represents the classes of the property',
+                unit: ''
+            }
+        ]
+    },
+    VIDEO: {
+        name: 'Class',
+        description: '',
+        dimensions: [
+            {
+                name: 'Class',
+                description: 'Value of the class',
+                unit: ''
+            }
+        ]
+    },
     HEART_RATE: {
         name: 'Heart Rate',
         description: 'Heart Rate Measurement (HRM)',

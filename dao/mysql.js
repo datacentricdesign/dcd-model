@@ -257,6 +257,39 @@ class MySQL {
     }
 
     /**
+     * @param dimensionId
+     * @param {Class[]} classes
+     * @return {Promise}
+     */
+    insertClasses(dimensionId, classes) {
+        const sql = 'INSERT IGNORE INTO `classes`'
+            + ' (`name`, `description`, `value`, `dimension_id`) VALUES ?';
+        const data = [];
+        for (let index = 0; index < classes.length; index++) {
+            const clazz = classes[index];
+            data.push([clazz.name, clazz.description, clazz.value, dimensionId]);
+        }
+        return this.exec(sql, [data]);
+    }
+
+    /**
+     *
+     */
+    listDimensionClasses(dimensionId) {
+        const sql = 'SELECT `name`, `description`, `value`\n'
+            + 'FROM `classes`\n' +
+            + 'WHERE `dimension_id` = ?';
+        return this.exec(sql, [dimensionId]).then((results) => {
+            const classes = [];
+            results.forEach( (data) => {
+                classes.push(new Class(data.name, data.description,
+                    data.value, dimensionId));
+            });
+            return Promise.resolve(classes);
+        });
+    }
+
+    /**
      * @param {String} id
      * @return {*}
      */

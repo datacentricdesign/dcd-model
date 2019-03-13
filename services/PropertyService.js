@@ -91,6 +91,45 @@ class PropertyService {
     }
 
     /**
+     * Create new classes for a given dimension.
+     * @param {int} dimensionId
+     * @param {Class[]} classes
+     **/
+    createClasses(dimensionId, classes) {
+        // Fetch the existing classes to known the attributed values
+        return this.listClasses(dimensionId)
+            .then( (existingClasses) => {
+                // By default, the first attributed value is 0
+                let value = 0;
+                existingClasses.forEach( (clazz) => {
+                    // Our next value need to be greater than all existing ones
+                    if (clazz.value >= value) value = clazz.value+1;
+                });
+
+                classes.forEach( (clazz) => {
+                    clazz.value = value;
+                    clazz.dimensionId = dimensionId;
+                    value++;
+                });
+                return this.model.dao.insertClasses(dimensionId, classes);
+            })
+            .then(() => {
+                return Promise.resolve(classes);
+            })
+            .catch((error) => {
+                return Promise.reject(error);
+            });
+    }
+
+    /**
+     * @param dimensionId
+     * @return {Promise<Class[]>}
+     */
+    listClasses(dimensionId) {
+        return this.model.dao.listDimensionClasses(dimensionId);
+    }
+
+    /**
      * Delete a property
      * @param propertyId
      * @return {Promise}
