@@ -7,10 +7,10 @@ class Property {
     /**
      *
      * @param {String|Object} name
-     * @param description
-     * @param type
-     * @param dimensions
-     * @param id
+     * @param {String} description
+     * @param {String} type
+     * @param {Dimension[]} dimensions
+     * @param {String} id
      */
     constructor(name = '', description = '', type = undefined, dimensions = [], id) {
         if (typeof name === 'object') {

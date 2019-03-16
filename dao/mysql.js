@@ -182,12 +182,12 @@ class MySQL {
             .then((result) => {
                 if (property.dimensions === undefined
                     || property.dimensions.length === 0) {
-                    return Promise.resolve(toPropertyID(property.name));
+                    return Promise.resolve(property.id);
                 }
                 return this.insertDimensions(
                     result.insertId, property.dimensions);
             }).then(() => {
-                return Promise.resolve(toPropertyID(property.name));
+                return Promise.resolve(property.id);
             });
     }
 
@@ -513,14 +513,6 @@ class MySQL {
             propertyWithValues.addValues(values);
             return Promise.resolve(propertyWithValues);
         });
-    }
-
-    /**
-     * @return {Promise<Object>}
-     */
-    listStates() {
-        const sql = 'SELECT * FROM `states`';
-        return this.exec(sql);
     }
 
     /**

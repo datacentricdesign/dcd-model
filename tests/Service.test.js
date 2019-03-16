@@ -15,7 +15,7 @@ const Property = require('../entities/Property');
 const DCDModel = require('../index');
 const model = new DCDModel();
 
-const password = 'testtest';
+const password = 'password';
 const person = new Person('Test', password);
 const thing = new Thing('test', 'test thing desc', 'Smart phone');
 const property = new Property('test property', 'test desc', 'ACCELEROMETER');
@@ -55,7 +55,7 @@ model.init()
     .then((result) => {
         assert.equal(result.valid, true,
             'Person check should return true');
-        return model.persons.check(person.id, password+'wrong');
+        return model.persons.check(person.id, password + 'wrong');
     })
 
     // Test: create thing
@@ -66,7 +66,7 @@ model.init()
     })
 
     // Test: list things that 'Test' has access to
-    .then((result) => {
+    .then(() => {
         return model.things.list(person.id);
     })
 

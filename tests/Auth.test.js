@@ -19,7 +19,7 @@ model.init()
 // Test: create a Thing
     .then(() => {
         const personId = 'testUser';
-        const thing = new Thing('test', 'test thing desc', 'Smartphone');
+        const thing = new Thing('test', 'test thing desc', 'Smart-phone');
         return model.things.create(personId, thing, true);
     })
 

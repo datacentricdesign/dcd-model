@@ -8,6 +8,7 @@ logger.level = process.env.LOG_LEVEL || 'INFO';
 const Person = require('../entities/Person');
 const Thing = require('../entities/Thing');
 const Property = require('../entities/Property');
+const Class = require('../entities/Class');
 
 const MySQL = require('../dao/mysql');
 const mysql = new MySQL();
@@ -19,9 +20,11 @@ const name = process.env.MODEL_NAME || 'dcdhub';
 
 mysql.connect(host, user, pass, name);
 
-const person = new Person('Test Person', 'passwordtest');
+const person = new Person('Test Person', 'password');
 const thing = new Thing('Test Thing', 'a test of thing', 'Smart phone');
 const property = new Property('Test property', 'test of prop', 'ACCELEROMETER');
+const classProperty = new Property('Test class property',
+    'test of class prop', 'CLASS');
 
 // Test: Create person
 mysql.createPerson(person)
@@ -82,15 +85,38 @@ mysql.createPerson(person)
         return mysql.updateThing(thing);
     })
 
-    // Test: Create property
+    // Test: Create ACCELEROMETER property
     .then(() => {
         property.entityId = thing.id;
         return mysql.createProperty(property);
     })
 
-    // Test: Read property
+    // Test: Read ACCELEROMETER property
     .then(() => {
-        return mysql.readProperty(property.id);
+        return mysql.readProperty(thing.id, property.id);
+    })
+
+    // Test: Create CLASS property
+    .then(() => {
+        classProperty.entityId = thing.id;
+        return mysql.createProperty(classProperty);
+    })
+
+    // Test: Create Class
+    .then(() => {
+        const dimensionId = classProperty.dimensions[0];
+        const clazz = new Class("testClass", 0, dimensionId, "Test class");
+        return mysql.insertClasses(dimensionId, [clazz]);
+    })
+
+    // Test: Read CLASS property with class
+    .then(() => {
+        return mysql.readProperty(thing.id, classProperty.id);
+    })
+
+    // Test: Read ACCELEROMETER property
+    .then(() => {
+        return mysql.readProperty(thing.id, property.id);
     })
 
     // Test: List properties

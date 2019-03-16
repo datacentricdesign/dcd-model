@@ -5,21 +5,21 @@ class Class {
     /**
      * @constructor
      */
-    constructor(name, value, dimensionId = undefined, description = "") {
+    constructor(name, value, propertyId, description = "") {
         if (typeof name === 'object') {
             const json = name;
             this.name = json.name;
             this.value = json.value;
-            this.dimensionId = json.dimensionId;
+            this.propertyId = json.propertyId;
             this.description = json.description;
         } else {
             this.name = name;
             this.value = value;
-            this.dimensionId = dimensionId;
+            this.propertyId = propertyId;
             this.description = description;
         }
     }
 
 }
 
-module.exports = Dimension;
+module.exports = Class;
