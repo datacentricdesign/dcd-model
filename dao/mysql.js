@@ -268,7 +268,7 @@ class MySQL {
         const data = [];
         for (let index = 0; index < classes.length; index++) {
             const clazz = classes[index];
-            data.push([clazz.name, clazz.description, clazz.value, dimensionId]);
+            data.push([clazz.name, clazz.description, clazz.value, propertyId]);
         }
         return this.exec(sql, [data]);
     }
