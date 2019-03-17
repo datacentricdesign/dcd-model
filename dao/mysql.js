@@ -331,7 +331,7 @@ class MySQL {
             ' c.`name` AS \'cname\', c.`description` AS \'cdesc\', c.`value` AS \'cvalue\'\n' +
             ' FROM `properties` p \n' +
             '  JOIN `dimensions` d ON d.`property_index_id` = p.`index_id` \n' +
-            '  LEFT JOIN `classes` c ON c.`property_id` = p.`property_id` \n' +
+            '  LEFT JOIN `classes` c ON c.`property_id` = p.`id` \n' +
             ' WHERE p.`entity_id` = ? ';
         return this.exec(sql, [entityId]).then((results) => {
             const properties = {};
