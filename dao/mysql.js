@@ -327,7 +327,7 @@ class MySQL {
         const sql = 'SELECT p.`name` AS \'pname\',' +
             ' p.`description` AS \'pdesc\', p.`type` AS \'ptype\', ' +
             ' p.`registered_at`, p.`id` AS \'property_id\', ' +
-            ' d.`name`, d.`description`, d.`unit` ' +
+            ' d.`name`, d.`description`, d.`unit`, ' +
             ' c.`name` AS \'cname\', c.`description` AS \'cdesc\', c.`value` AS \'cvalue\'\n' +
             ' FROM `properties` p \n' +
             '  JOIN `dimensions` d ON d.`property_index_id` = p.`index_id` \n' +
