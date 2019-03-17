@@ -357,7 +357,7 @@ class MySQL {
 
                 if (data.cname !== null) {
                     properties[pId].addClass(
-                        new Class(data.cname, data.cdesc, data.cvalue));
+                        new Class(data.cname, data.cvalue, pId, data.cdesc));
                 }
             });
             const propArray = [];
