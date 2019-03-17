@@ -501,7 +501,7 @@ class MySQL {
             sql += ',`value' + i + '`';
         }
         sql += 'FROM `d' + property.dimensions.length + '` ';
-        sql += ' JOIN properties `p` ON p.`index_id` = d.`property_index_id`';
+        sql += ' JOIN properties `p` ON p.`index_id` = `d' + property.dimensions.length +'`.`property_index_id`';
         sql += ' WHERE `p`.id = ?';
         data.push(property.id);
         if (from !== undefined && to !== undefined) {
