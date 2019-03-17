@@ -281,11 +281,11 @@ class MySQL {
         const sql = 'SELECT `name`, `description`, `value`\n'
             + 'FROM `classes`\n' +
             +'WHERE `property_id` = ?';
-        return this.exec(sql, [dimensionId]).then((results) => {
+        return this.exec(sql, [propertyId]).then((results) => {
             const classes = [];
             results.forEach((data) => {
-                classes.push(new Class(data.name, data.description,
-                    data.value, dimensionId));
+                classes.push(new Class(data.name,
+                    data.value, propertyId, data.description));
             });
             return Promise.resolve(classes);
         });

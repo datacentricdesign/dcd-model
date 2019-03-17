@@ -102,8 +102,8 @@ class PropertyService {
         return this.read(thingId, propertyId)
             .then( (property) => {
                 if (property.type === 'CLASS') {
-                    // Fetch the existing classes to known the attributed values
-                    return this.listClasses(propertyId);
+                    // Fetch the existing classes to know the attributed values
+                    return this.model.dao.listPropertyClasses(propertyId);
                 } else {
                     return Promise.reject({msg: 'Property must be of type CLASS.'})
                 }
