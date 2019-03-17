@@ -12,7 +12,7 @@ class Property {
      * @param {Dimension[]} dimensions
      * @param {String} id
      */
-    constructor(name = '', description = '', type = undefined, dimensions = [], id) {
+    constructor(name = '', description = '', type = undefined, dimensions = [], classes = [], id) {
         if (typeof name === 'object') {
             const property = name;
 
@@ -43,6 +43,12 @@ class Property {
                 this.dimensions = [];
             }
 
+            if (property.classes !== undefined) {
+                this.classes = property.classes;
+            } else if (this.classes === undefined) {
+                this.classes = [];
+            }
+
             this.values = property.values !== undefined
                 ? property.values : [];
             this.entityId = property.entityId !== undefined
@@ -63,6 +69,10 @@ class Property {
 
             if (this.dimensions === undefined || dimensions.length > 0) {
                 this.dimensions = dimensions;
+            }
+
+            if (this.classes === undefined || classes.length > 0) {
+                this.classes = classes;
             }
 
             this.values = [];
@@ -103,6 +113,13 @@ class Property {
      */
     addDimension(dimension) {
         this.dimensions.push(dimension);
+    }
+
+    /**
+     * @param {Class} clazz
+     */
+    addClass(clazz) {
+        this.classes.push(clazz);
     }
 
     static types() {
@@ -371,13 +388,13 @@ const Types = {
         ]
     },
     VIDEO: {
-        name: 'Class',
+        name: 'Video',
         description: '',
         dimensions: [
             {
-                name: 'Class',
-                description: 'Value of the class',
-                unit: ''
+                name: 'Duration',
+                description: 'Duration of the video record.',
+                unit: 'ms'
             }
         ]
     },

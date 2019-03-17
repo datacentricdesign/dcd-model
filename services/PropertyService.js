@@ -92,12 +92,20 @@ class PropertyService {
 
     /**
      * Create new classes for a given dimension.
-     * @param {int} dimensionId
+     * @param {String} thingId
+     * @param {String} propertyId
      * @param {Class[]} classes
      **/
-    createClasses(dimensionId, classes) {
-        // Fetch the existing classes to known the attributed values
-        return this.listClasses(dimensionId)
+    createClasses(thingId, propertyId, classes) {
+        return this.read(thingId, propertyId)
+            .then( (property) => {
+                if (property.type === 'CLASS') {
+                    // Fetch the existing classes to known the attributed values
+                    return this.listClasses(propertyId);
+                } else {
+                    return Promise.reject({msg: 'Property must be of type CLASS.'})
+                }
+            })
             .then( (existingClasses) => {
                 // By default, the first attributed value is 0
                 let value = 0;
@@ -108,10 +116,10 @@ class PropertyService {
 
                 classes.forEach( (clazz) => {
                     clazz.value = value;
-                    clazz.dimensionId = dimensionId;
+                    clazz.propertyId = propertyId;
                     value++;
                 });
-                return this.model.dao.insertClasses(dimensionId, classes);
+                return this.model.dao.insertClasses(propertyId, classes);
             })
             .then(() => {
                 return Promise.resolve(classes);
@@ -119,14 +127,6 @@ class PropertyService {
             .catch((error) => {
                 return Promise.reject(error);
             });
-    }
-
-    /**
-     * @param dimensionId
-     * @return {Promise<Class[]>}
-     */
-    listClasses(dimensionId) {
-        return this.model.dao.listDimensionClasses(dimensionId);
     }
 
     /**

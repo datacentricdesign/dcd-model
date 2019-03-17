@@ -9,7 +9,6 @@ class Dimension {
         this.name = name !== undefined ? name : '';
         this.description = description !== undefined ? description : '';
         this.unit = unit !== undefined ? unit : '';
-        this.classes = classes;
     }
 
 }

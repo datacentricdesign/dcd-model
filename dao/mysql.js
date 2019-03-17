@@ -10,6 +10,7 @@ const Person = require('../entities/Person');
 const Thing = require('../entities/Thing');
 const Property = require('../entities/Property');
 const Dimension = require('../entities/Dimension');
+const Class = require('../entities/Class');
 
 class MySQL {
 
@@ -257,13 +258,13 @@ class MySQL {
     }
 
     /**
-     * @param dimensionId
+     * @param {String} propertyId
      * @param {Class[]} classes
      * @return {Promise}
      */
-    insertClasses(dimensionId, classes) {
+    insertClasses(propertyId, classes) {
         const sql = 'INSERT IGNORE INTO `classes`'
-            + ' (`name`, `description`, `value`, `dimension_id`) VALUES ?';
+            + ' (`name`, `description`, `value`, `property_id`) VALUES ?';
         const data = [];
         for (let index = 0; index < classes.length; index++) {
             const clazz = classes[index];
@@ -273,15 +274,16 @@ class MySQL {
     }
 
     /**
-     *
+     * List property classes
+     * @param {String} propertyId
      */
-    listDimensionClasses(dimensionId) {
+    listPropertyClasses(propertyId) {
         const sql = 'SELECT `name`, `description`, `value`\n'
             + 'FROM `classes`\n' +
-            + 'WHERE `dimension_id` = ?';
+            +'WHERE `property_id` = ?';
         return this.exec(sql, [dimensionId]).then((results) => {
             const classes = [];
-            results.forEach( (data) => {
+            results.forEach((data) => {
                 classes.push(new Class(data.name, data.description,
                     data.value, dimensionId));
             });
@@ -323,25 +325,38 @@ class MySQL {
      */
     listProperties(entityId) {
         const sql = 'SELECT p.`name` AS \'pname\',' +
-            ' p.`description` AS \'pdesc\',' +
-            ' p.`type` AS \'ptype\', p.`registered_at`,' +
-            ' p.`id` AS \'property_id\', d.`name`,' +
-            ' d.`description`, d.`unit`\n' +
+            ' p.`description` AS \'pdesc\', p.`type` AS \'ptype\', ' +
+            ' p.`registered_at`, p.`id` AS \'property_id\', ' +
+            ' d.`name`, d.`description`, d.`unit` ' +
+            ' c.`name` AS \'cname\', c.`description` AS \'cdesc\', c.`value` AS \'cvalue\'\n' +
             ' FROM `properties` p \n' +
             '  JOIN `dimensions` d ON d.`property_index_id` = p.`index_id` \n' +
+            '  LEFT JOIN `classes` c ON c.`property_id` = p.`property_id` \n' +
             ' WHERE p.`entity_id` = ? ';
         return this.exec(sql, [entityId]).then((results) => {
             const properties = {};
-            results.forEach( (data) => {
+            results.forEach((data) => {
                 const pId = data.property_id;
-                const dimension = new Dimension(data.name,
-                    data.description, data.unit);
+
+                // if we did not add this property yet
                 if (properties[pId] === undefined) {
                     properties[pId] = new Property(data.pname,
-                        data.pdesc, data.ptype, [dimension], pId);
+                        data.pdesc, data.ptype, [], pId);
                     properties[pId].registeredAt = data.registered_at.getTime();
-                } else {
+                }
+
+                const dimensions = properties[pId].dimensions;
+                // if we did not add this dimension yet (none or current different from previous)
+                if (dimensions.length === 0
+                    || dimensions[dimensions.length - 1].name !== data.name) {
+                    const dimension = new Dimension(data.name,
+                        data.description, data.unit);
                     properties[pId].addDimension(dimension);
+                }
+
+                if (data.cname !== null) {
+                    properties[pId].addClass(
+                        new Class(data.cname, data.cdesc, data.cvalue));
                 }
             });
             const propArray = [];
@@ -364,9 +379,9 @@ class MySQL {
             '   JOIN `entities_roles` er ON t.`id`=er.`subject_entity_id`\n' +
             'WHERE er.`actor_entity_id` = ?';
         return this.exec(sql, [actorEntityId])
-            .then( (result) => {
+            .then((result) => {
                 const persons = [];
-                result.forEach( (p) => {
+                result.forEach((p) => {
                     persons.push(new Person(p.name, undefined, [], p.id));
                 });
                 return persons;
