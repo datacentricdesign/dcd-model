@@ -10,6 +10,7 @@ class Property {
      * @param {String} description
      * @param {String} type
      * @param {Dimension[]} dimensions
+     * @param {Classes[]} classes
      * @param {String} id
      */
     constructor(name = '', description = '', type = undefined, dimensions = [], classes = [], id) {

@@ -95,11 +95,12 @@ class ThingService {
             .then((result) => {
                 thing = result;
                 return this.model.properties.list(id)
-                    .then((results) => {
-                        thing.properties = results;
-                        return Promise.resolve(removePrefixThing(thing));
-                    });
-            }).catch((error) => {
+            })
+            .then((results) => {
+                thing.properties = results;
+                return Promise.resolve(removePrefixThing(thing));
+            })
+            .catch((error) => {
                 return Promise.reject(error);
             });
     }

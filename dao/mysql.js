@@ -341,8 +341,9 @@ class MySQL {
                 // if we did not add this property yet
                 if (properties[pId] === undefined) {
                     properties[pId] = new Property(data.pname,
-                        data.pdesc, data.ptype, [], pId);
+                        data.pdesc, data.ptype, [], [], pId);
                     properties[pId].registeredAt = data.registered_at.getTime();
+                    properties[pId].entityId = entityId
                 }
 
                 const dimensions = properties[pId].dimensions;
