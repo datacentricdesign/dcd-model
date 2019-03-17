@@ -479,7 +479,7 @@ class MySQL {
                     dimensions.push(new Dimension(data.name, data.description, data.unit));
                 }
                 const property = new Property(data.pname, data.pdesc,
-                    data.ptype, dimensions, data.id);
+                    data.ptype, dimensions, [], data.id);
                 property.registeredAt = data.registered_at.getTime();
                 return Promise.resolve(property);
             } else {
