@@ -501,15 +501,18 @@ class MySQL {
             sql += ',`value' + i + '`';
         }
         sql += 'FROM `d' + property.dimensions.length + '` ';
+        sql += ' JOIN properties `p` ON p.`index_id` = d.`property_index_id`';
+        sql += ' WHERE `p`.id = ?';
+        data.push(property.id);
         if (from !== undefined && to !== undefined) {
-            sql += 'WHERE `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`';
+            sql += 'AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`';
             data.push(from);
             data.push(to);
         } else if (from !== undefined) {
-            sql += 'WHERE `timestamp` >= ? ORDER BY `timestamp`';
+            sql += 'AND `timestamp` >= ? ORDER BY `timestamp`';
             data.push(from);
         } else if (to !== undefined) {
-            sql += 'WHERE `timestamp` <= ? ORDER BY `timestamp`';
+            sql += 'AND `timestamp` <= ? ORDER BY `timestamp`';
             data.push(to);
         } else {
             sql += 'ORDER BY `timestamp` DESC LIMIT 1';
