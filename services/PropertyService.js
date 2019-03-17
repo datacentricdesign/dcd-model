@@ -42,6 +42,8 @@ class PropertyService {
             .then((property) => {
                 if (from !== undefined && to !== undefined) {
                     return this.model.dao.readPropertyValues(property, from, to)
+                } else {
+                    return Promise.resolve(property);
                 }
             })
             .catch((error) => {
