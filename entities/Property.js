@@ -556,6 +556,174 @@ const Types = {
             }
         ]
     },
+    NINE_DIMENSIONS: {
+        name: '9 Dimensions',
+        description: '',
+        dimensions: [
+            {
+                name: 'Value1',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value2',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value3',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value4',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value5',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value6',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value7',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value8',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value9',
+                description: '',
+                unit: ''
+            }
+        ]
+    },
+    TEN_DIMENSIONS: {
+        name: '10 Dimensions',
+        description: '',
+        dimensions: [
+            {
+                name: 'Value1',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value2',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value3',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value4',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value5',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value6',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value7',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value8',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value9',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value10',
+                description: '',
+                unit: ''
+            }
+        ]
+    },
+    ELEVEN_DIMENSIONS: {
+        name: '11 Dimensions',
+        description: '',
+        dimensions: [
+            {
+                name: 'Value1',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value2',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value3',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value4',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value5',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value6',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value7',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value8',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value9',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value10',
+                description: '',
+                unit: ''
+            },
+            {
+                name: 'Value11',
+                description: '',
+                unit: ''
+            }
+        ]
+    },
     TWELVE_DIMENSIONS: {
         name: '12 Dimensions',
         description: '',
