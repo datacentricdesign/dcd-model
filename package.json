@@ -19,15 +19,22 @@
   },
   "homepage": "https://github.com/datacentricdesign/dcd-model#README",
   "dependencies": {
+    "babel-eslint": "^10.0.1",
     "crypto": "^1.0.1",
+    "eslint": "^5.16.0",
     "jsonwebtoken": "^8.5.0",
     "jwk-to-pem": "^2.0.1",
     "kafka-node": "^3.0.1",
     "log4js": "^3.0.6",
     "mysql": "^2.16.0",
     "node-fetch": "^2.3.0",
+    "prettier": "^1.16.4",
     "querystring": "^0.2.0",
     "simple-oauth2": "^2.2.1",
     "url": "^0.11.0"
+  },
+  "optionalDependencies": {
+    "eslint-config-prettier": "4.0.0",
+    "eslint-plugin-prettier": "3.0.1"
   }
 }
