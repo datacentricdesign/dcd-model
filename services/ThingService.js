@@ -142,7 +142,8 @@ class ThingService {
   generateKeys(thingId) {
     const jwkParams = {
       kid: idGen.uuidv4(),
-      alg: "RS256"
+      alg: "RS256",
+      use: "sig"
     };
     return this.model.auth.refresh().then(() => {
       return this.model.auth.generateJWK(thingId, jwkParams);
