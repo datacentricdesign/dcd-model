@@ -1,4 +1,5 @@
 const ThingService = require("./services/ThingService");
+const InteractionService = require("./services/InteractionService");
 const PersonService = require("./services/PersonService");
 const PropertyService = require("./services/PropertyService");
 const Auth = require("./lib/Auth");
@@ -35,6 +36,7 @@ class DCDModel {
 
   setServices() {
     this.things = new ThingService(this);
+    this.interactions = new InteractionService(this);
     this.persons = new PersonService(this);
     this.properties = new PropertyService(this);
   }

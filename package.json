@@ -1,6 +1,6 @@
 {
   "name": "dcd-model",
-  "version": "0.0.48",
+  "version": "0.0.50",
   "description": "Model of the Data-Centric-Design Hub",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "url": "git+https://github.com/datacentricdesign/dcd-model.git"
   },
   "author": "Jacky Bourgeois",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/datacentricdesign/dcd-model/issues"
   },
@@ -22,13 +22,13 @@
     "babel-eslint": "^10.0.1",
     "crypto": "^1.0.1",
     "eslint": "^5.16.0",
-    "jsonwebtoken": "^8.5.0",
+    "jsonwebtoken": "^8.5.1",
     "jwk-to-pem": "^2.0.1",
     "kafka-node": "^3.0.1",
     "log4js": "^3.0.6",
-    "mysql": "^2.16.0",
-    "node-fetch": "^2.3.0",
-    "prettier": "^1.16.4",
+    "mysql": "^2.17.1",
+    "node-fetch": "^2.6.0",
+    "prettier": "^1.18.2",
     "querystring": "^0.2.0",
     "simple-oauth2": "^2.2.1",
     "url": "^0.11.0"

@@ -8,6 +8,7 @@ logger.level = process.env.LOG_LEVEL || "INFO";
 const mysql = require("mysql");
 const Person = require("../entities/Person");
 const Thing = require("../entities/Thing");
+const Interaction = require("../entities/Interaction");
 const Property = require("../entities/Property");
 const Dimension = require("../entities/Dimension");
 const Class = require("../entities/Class");
@@ -469,6 +470,66 @@ class MySQL {
         return Promise.reject({ code: 404, message: "Not Found" });
       }
     });
+  }
+
+  /**
+   * @param {Interaction} interaction
+   * @return {Promise}
+   */
+  createInteraction(interaction) {
+    const insert = {
+      id: interaction.id,
+      type: interaction.type,
+      entity_id_1: interaction.entityId1,
+      entity_id_2: interaction.entityId2
+    };
+    const sql = "INSERT INTO `interactions` SET ?";
+    return this.exec(sql, [insert]);
+  }
+
+  /**
+   * @param actorEntityId
+   * @return {Promise<Interaction[]>}
+   */
+  listInteractions(actorEntityId) {
+    const sql =
+      "SELECT `id`, `entity_id_1`, `entity_id_2`, `type` \n" +
+      "FROM `interactions` i\n" +
+      "   JOIN `entities_roles` er\n" +
+      "       ON (i.`entity_id_1`=er.`subject_entity_id` " +
+      "          OR i.`entity_id_2`=er.`subject_entity_id`)\n" +
+      "WHERE er.`actor_entity_id` = ?";
+    return this.exec(sql, actorEntityId).then(result => {
+      const interactions = [];
+      result.forEach(data => {
+        interactions.push(new Interaction(data));
+      });
+      return Promise.resolve(interactions);
+    });
+  }
+
+  /**
+   * @param {String} interactionId
+   * @returns {Promise<Interaction>}
+   */
+  readInteraction(interactionId) {
+    const sql = "SELECT * FROM `interactions`\n" + "WHERE `id` = ?";
+    return this.exec(sql, interactionId).then(result => {
+      if (result.length === 1) {
+        return Promise.resolve(result[0]);
+      } else {
+        return Promise.reject({ code: 404, message: "Not Found" });
+      }
+    });
+  }
+
+  /**
+   * @param {String} id
+   * @return {*}
+   */
+  deleteInteraction(id) {
+    const sql = "DELETE FROM `interactions` WHERE `id` = ?";
+    return this.exec(sql, [id]);
   }
 
   /**
