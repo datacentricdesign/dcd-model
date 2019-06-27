@@ -60,7 +60,10 @@ class ThingService {
               return createOwnerAccessPolicy(thing.id, actorId);
             })
             .then(() => {
-              return this.generateKeys(thing.id);
+              if (jwt) {
+                return this.generateKeys(thing.id);
+              }
+              return Promise.resolve(thing);
             })
             .then(keys => {
               if (jwt) {
