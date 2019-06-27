@@ -63,13 +63,15 @@ class ThingService {
               if (jwt) {
                 return this.generateKeys(thing.id);
               }
-              return Promise.resolve(thing);
+              return Promise.resolve();
             })
             .then(keys => {
-              if (jwt) {
-                keys.jwt = this.model.auth.generateJWT(keys.privateKey);
+              if (keys !== undefined) {
+                thing.keys = keys;
+                if (jwt) {
+                  keys.jwt = this.model.auth.generateJWT(keys.privateKey);
+                }
               }
-              thing.keys = keys;
               return Promise.resolve(thing);
             })
             .catch(error => {
