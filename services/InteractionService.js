@@ -17,11 +17,10 @@ class InteractionService {
   /**
    * Create a new Interaction.
    *
-   * @param {String} actorId
    * @param {Interaction} interaction
    * returns interaction
    **/
-  create(actorId, interaction) {
+  create(interaction) {
     return this.model.interactions
       .read(interaction.id)
       .then(retrievedInteraction => {
@@ -56,9 +55,10 @@ class InteractionService {
   /**
    * List some Interactions.
    * @param {String} actorId
+   * @param {String} entityDestId (optional)
    **/
-  list(actorId) {
-    return this.model.dao.listInteractions(actorId);
+  list(actorId, entityDestId) {
+    return this.model.dao.listInteractions(actorId, entityDestId);
   }
 
   /**
@@ -103,6 +103,27 @@ class InteractionService {
       interaction.id
     );
   }
+}
+
+/**
+ * Generate an access policy for a thing.
+ * @param thingId
+ * @returns {Promise<>}
+ */
+function createAccessPolicy(interactionId, thingId1, thingId2) {
+  const thingPolicy = {
+    id: thingId1 + "-" + thingId2 + "-int-" + "-crud-policy",
+    effect: "allow",
+    actions: ["dcd:actions:read", "dcd:actions:update", "dcd:actions:delete"],
+    subjects: ["dcd:things:" + thingId1, "dcd:things:" + thingId2],
+    resources: [
+      "dcd:interactions:" + interactionId,
+      "dcd:interactions:" + interactionId + ":properties",
+      "dcd:interactions:" + interactionId + ":properties:<.*>"
+    ]
+  };
+  logger.debug("Thing policy: " + JSON.stringify(thingPolicy));
+  return policies.create(thingPolicy);
 }
 
 module.exports = InteractionService;

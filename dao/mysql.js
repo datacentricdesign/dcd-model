@@ -335,7 +335,8 @@ class MySQL {
       " FROM `properties` p \n" +
       "  JOIN `dimensions` d ON d.`property_index_id` = p.`index_id` \n" +
       "  LEFT JOIN `classes` c ON c.`property_id` = p.`id` \n" +
-      " WHERE p.`entity_id` = ? ";
+      " WHERE p.`entity_id` = ? " +
+      " ORDER BY `pname`, d.`name`";
     return this.exec(sql, [entityId]).then(results => {
       const properties = {};
       results.forEach(data => {
@@ -489,17 +490,23 @@ class MySQL {
 
   /**
    * @param actorEntityId
+   * @param entityDestId
    * @return {Promise<Interaction[]>}
    */
-  listInteractions(actorEntityId) {
-    const sql =
-      "SELECT `id`, `entity_id_1`, `entity_id_2`, `type` \n" +
+  listInteractions(actorEntityId, entityDestId) {
+    let sql =
+      "SELECT `id`, `entity_id_1`, `entity_id_2` \n" +
       "FROM `interactions` i\n" +
       "   JOIN `entities_roles` er\n" +
       "       ON (i.`entity_id_1`=er.`subject_entity_id` " +
       "          OR i.`entity_id_2`=er.`subject_entity_id`)\n" +
       "WHERE er.`actor_entity_id` = ?";
-    return this.exec(sql, actorEntityId).then(result => {
+    let data = actorEntityId;
+    if (entityDestId !== undefined) {
+      sql += " AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)";
+      data = [actorEntityId, entityDestId, entityDestId];
+    }
+    return this.exec(sql, data).then(result => {
       const interactions = [];
       result.forEach(data => {
         interactions.push(new Interaction(data));

@@ -14,7 +14,6 @@ class Interaction {
     if (typeof type === "object") {
       const interaction = type;
       this.id = interaction.id !== undefined ? interaction.id : idGen.uuidv4();
-      this.type = interaction.type !== undefined ? interaction.type : "";
       this.entityId1 =
         interaction.entityId1 !== undefined ? interaction.entityId1 : "";
       this.entityId2 =

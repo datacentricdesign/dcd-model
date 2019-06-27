@@ -196,8 +196,8 @@ function createOwnerAccessPolicy(thingId, subject) {
       "dcd:things:" + thingId,
       "dcd:things:" + thingId + ":properties",
       "dcd:things:" + thingId + ":properties:<.*>",
-      "dcd:interactions:" + thingId + ":<.*>",
-      "dcd:interactions:<.*>:" + thingId
+      "dcd:things:" + thingId + ":interactions:",
+      "dcd:things:" + thingId + ":interactions:<.*>"
     ]
   };
   return policies.create(thingOwnerPolicy);
