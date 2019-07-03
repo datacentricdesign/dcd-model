@@ -23,9 +23,6 @@ class Property {
     if (typeof name === "object") {
       const property = name;
 
-      this.id =
-        property.id !== undefined ? property.id : idGen.toID(property.name);
-
       if (
         property.type !== undefined &&
         (property.dimensions === undefined || property.dimensions.length === 0)
@@ -33,6 +30,9 @@ class Property {
         this.enrichType(property.type);
       }
       this.type = property.type;
+
+      this.id =
+        property.id !== undefined ? property.id : idGen.toID(property.name);
 
       if (property.name !== undefined) {
         this.name = property.name;
