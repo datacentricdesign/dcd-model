@@ -43,6 +43,9 @@ class InteractionService {
               // Publish the interaction to kafka
               return this.toKafka(interaction);
             })
+            .then(() => {
+              return Promise.resolve(interaction);
+            })
             .catch(error => {
               return Promise.reject(error);
             });
