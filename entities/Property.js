@@ -429,6 +429,27 @@ const Types = {
       }
     ]
   },
+  WIFI: {
+    name: "WiFi",
+    description: "WiFi interaction",
+    dimensions: [
+      {
+        name: "Session duration",
+        description: "Session duration",
+        unit: "ms"
+      },
+      {
+        name: "RSSI",
+        description: "Received Signal Strength Indicator",
+        unit: ""
+      },
+      {
+        name: "SNR",
+        description: "Signal-to-Noise Ratio",
+        unit: ""
+      }
+    ]
+  },
   ONE_DIMENSION: {
     name: "1 Dimension",
     description: "",
