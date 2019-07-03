@@ -31,14 +31,14 @@ class Property {
       }
       this.type = property.type;
 
-      this.id =
-        property.id !== undefined ? property.id : idGen.toID(property.name);
-
       if (property.name !== undefined) {
         this.name = property.name;
       } else if (this.name === undefined) {
         this.name = "";
       }
+
+      this.id =
+        property.id !== undefined ? property.id : idGen.toID(this.name);
 
       if (property.description !== undefined) {
         this.description = property.description;
