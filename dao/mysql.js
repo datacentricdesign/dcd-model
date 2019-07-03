@@ -480,7 +480,6 @@ class MySQL {
   createInteraction(interaction) {
     const insert = {
       id: interaction.id,
-      type: interaction.type,
       entity_id_1: interaction.entityId1,
       entity_id_2: interaction.entityId2
     };
