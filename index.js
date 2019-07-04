@@ -7,6 +7,9 @@ const MySQL = require("./dao/mysql");
 
 const Kafka = require("./dao/kafka");
 
+let authEnabled = process.env.AUTH_ENABLED;
+if (authEnabled === undefined) authEnabled = true;
+
 class DCDModel {
   constructor() {
     this.setDAO();
@@ -15,7 +18,10 @@ class DCDModel {
 
     this.setServices();
 
-    this.auth = new Auth();
+    if (authEnabled) {
+      this.auth = new Auth();
+    }
+
   }
 
   init() {
