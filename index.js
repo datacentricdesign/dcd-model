@@ -2,7 +2,6 @@ const ThingService = require("./services/ThingService");
 const InteractionService = require("./services/InteractionService");
 const PersonService = require("./services/PersonService");
 const PropertyService = require("./services/PropertyService");
-const Auth = require("./lib/Auth");
 const MySQL = require("./dao/mysql");
 
 const Kafka = require("./dao/kafka");
@@ -19,6 +18,7 @@ class DCDModel {
     this.setServices();
 
     if (authEnabled) {
+      const Auth = require("./lib/Auth");
       this.auth = new Auth();
     }
 
