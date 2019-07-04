@@ -37,7 +37,7 @@ class Thing {
         return property;
       }
     });
-    throw Exception(new Error('Property not found'));
+    throw new Error('Property not found');
   }
 
 }
