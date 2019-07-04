@@ -6,7 +6,8 @@ const MySQL = require("./dao/mysql");
 
 const Kafka = require("./dao/kafka");
 
-let authEnabled = process.env.AUTH_ENABLED;
+let authEnabled = process.env.AUTH_ENABLED === undefined
+                    || process.env.AUTH_ENABLED === "true";
 if (authEnabled === undefined) authEnabled = true;
 
 class DCDModel {
