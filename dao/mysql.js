@@ -466,7 +466,7 @@ class MySQL {
     const sql = "SELECT * FROM `things`\n" + "WHERE `id` = ?";
     return this.exec(sql, thingId).then(result => {
       if (result.length === 1) {
-        return Promise.resolve(result[0]);
+        return Promise.resolve(new Thing(result[0]));
       } else {
         return Promise.reject({ code: 404, message: "Not Found" });
       }
