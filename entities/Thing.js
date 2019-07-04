@@ -32,11 +32,12 @@ class Thing {
   }
 
   findPropertyByName(name) {
-    this.properties.forEach( (property) => {
+    for (let key in this.properties) {
+      const property = this.properties[key];
       if (property.name === name) {
         return property;
       }
-    });
+    }
     throw new Error('Property not found');
   }
 
