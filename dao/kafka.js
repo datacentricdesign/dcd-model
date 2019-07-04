@@ -6,8 +6,6 @@ const logger = log4js.getLogger("[dcd:kafka]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
 const kafka = require("kafka-node");
-const Producer = kafka.Producer;
-const KeyedMessage = kafka.KeyedMessage;
 
 const TOPICS = ["things", "properties", "persons", "values"];
 
@@ -39,7 +37,7 @@ class Kafka {
       this.client = new kafka.KafkaClient({
         kafkaHost: this.host + ":" + this.port
       });
-      this.producer = new Producer(this.client /*, {partitionerType: 3}*/);
+      this.producer = new kafka.Producer(this.client /*, {partitionerType: 3}*/);
 
       this.producer.on("ready", () => {
         logger.info("Producer ready");
@@ -53,6 +51,7 @@ class Kafka {
       this.producer.on("error", error => {
         logger.error(error);
       });
+
     } else {
       logger.error("Kafka is disabled");
     }
@@ -66,7 +65,7 @@ class Kafka {
         let msgCount = 0;
         body.forEach(msg => {
           if (key !== undefined) {
-            messages.push(new KeyedMessage(key, JSON.stringify(msg)));
+            messages.push(new kafka.KeyedMessage(key, JSON.stringify(msg)));
           } else {
             messages.push(JSON.stringify(msg));
           }
@@ -88,7 +87,35 @@ class Kafka {
         message: "Kafka producer not ready."
       });
     }
-    return Promise.reject({ code: 500, message: "Kafka not enabled." });
+    return Promise.reject({code: 500, message: "Kafka not enabled."});
+  }
+
+  setConsumer(topics, options, onMessage) {
+
+    const consumer = new kafka.Consumer(this.client, topics, options);
+    const offset = new kafka.Offset(this.client);
+
+    consumer.on('message', onMessage);
+
+    consumer.on('error', (error) => {
+      logger.error('error', error);
+    });
+
+    /*
+       * If consumer get `offsetOutOfRange` event,
+       * fetch data from the smallest(oldest) offset
+       */
+    consumer.on('offsetOutOfRange', (topic) => {
+      topic.maxNum = 2;
+      offset.fetch([topic], (error, offsets) => {
+        if (error) {
+          return logger.error(error);
+        }
+        const min = Math.min.apply(null,
+          offsets[topic.topic][topic.partition]);
+        consumer.setOffset(topic.topic, topic.partition, min);
+      });
+    });
   }
 
   /**
@@ -101,7 +128,7 @@ class Kafka {
       "Send Data to " + topic + " message: " + JSON.stringify(messages)
     );
     return new Promise((resolve, reject) => {
-      const payloads = [{ topic: topic, messages: messages }];
+      const payloads = [{topic: topic, messages: messages}];
       this.producer.send(payloads, error => {
         if (error) {
           return reject(error);

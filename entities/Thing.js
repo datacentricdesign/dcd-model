@@ -30,6 +30,16 @@ class Thing {
     this.readAt = Date.now();
     this.keys = {};
   }
+
+  findPropertyByName(name) {
+    this.properties.forEach( (property) => {
+      if (property.name === name) {
+        return property;
+      }
+    });
+    throw Exception(new Error('Property not found'));
+  }
+
 }
 
 module.exports = Thing;
