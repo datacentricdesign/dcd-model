@@ -108,9 +108,9 @@ class InteractionService {
     let interaction = {};
     return this.model.dao
       .readInteractionByEntityId(entityId1, entityId2)
-      .then(result => {
-        interaction = result;
-        return this.model.properties.list(id);
+      .then(retrievedInteraction => {
+        interaction = retrievedInteraction;
+        return this.model.properties.list(interaction.id);
       })
       .then(results => {
         interaction.properties = results;

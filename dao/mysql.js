@@ -522,7 +522,7 @@ class MySQL {
     const sql = "SELECT * FROM `interactions`\n" + "WHERE `id` = ?";
     return this.exec(sql, interactionId).then(result => {
       if (result.length === 1) {
-        return Promise.resolve(result[0]);
+        return Promise.resolve(new Interaction(result[0]));
       } else {
         return Promise.reject({ code: 404, message: "Not Found" });
       }
@@ -540,7 +540,7 @@ class MySQL {
       + " OR (`entity_id_2` = ? AND `entity_id_1` = ?)";
     return this.exec(sql, [entityId1, entityId2, entityId1, entityId2]).then(result => {
       if (result.length === 1) {
-        return Promise.resolve(result[0]);
+        return Promise.resolve(new Interaction(result[0]));
       } else {
         return Promise.reject({ code: 404, message: "Not Found" });
       }
