@@ -21,8 +21,7 @@ class InteractionService {
    * returns interaction
    **/
   create(interaction) {
-    return this.model.interactions
-      .read(interaction.id)
+    return this.readByIdOrEntityId(interaction)
       .then(retrievedInteraction => {
         // Read positive, the Interaction already exist
         return Promise.reject({
@@ -55,6 +54,14 @@ class InteractionService {
       });
   }
 
+  readByIdOrEntityId(interaction) {
+    if (interaction.id === undefined) {
+      return this.model.interactions.readByEntityId(interaction.entityId1, interaction.entityId2);
+    } else {
+      return this.model.interactions.read(interaction.id);
+    }
+  }
+
   /**
    * List some Interactions.
    * @param {String} actorId
@@ -73,6 +80,29 @@ class InteractionService {
     let interaction = {};
     return this.model.dao
       .readInteraction(id)
+      .then(result => {
+        interaction = result;
+        return this.model.properties.list(id);
+      })
+      .then(results => {
+        interaction.properties = results;
+        return Promise.resolve(interaction);
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
+
+  /**
+   * Read an Interaction from two entity ids.
+   * @param {String} entityId1
+   * @param {String} entityId2
+   * returns {Interaction}
+   **/
+  readByEntityId(entityId1, entityId2) {
+    let interaction = {};
+    return this.model.dao
+      .readInteractionByEntityId(entityId1, entityId2)
       .then(result => {
         interaction = result;
         return this.model.properties.list(id);

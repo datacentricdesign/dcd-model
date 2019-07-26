@@ -530,6 +530,24 @@ class MySQL {
   }
 
   /**
+   * @param {String} entityId1
+   * @param {String} entityId2
+   * @returns {Promise<Interaction>}
+   */
+  readInteractionByEntityId(entityId1, entityId2) {
+    const sql = "SELECT * FROM `interactions`\n"
+      + "WHERE `entity_id_1` = ? AND `entity_id_2` = ?`\n"
+      + " OR `entity_id_2` = ? AND `entity_id_1` = ?`";
+    return this.exec(sql, [entityId1, entityId2, entityId1, entityId2]).then(result => {
+      if (result.length === 1) {
+        return Promise.resolve(result[0]);
+      } else {
+        return Promise.reject({ code: 404, message: "Not Found" });
+      }
+    });
+  }
+
+  /**
    * @param {String} id
    * @return {*}
    */

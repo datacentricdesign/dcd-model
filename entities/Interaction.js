@@ -13,7 +13,7 @@ class Interaction {
   constructor(type = "", entityId1, entityId2, properties = [], id) {
     if (typeof type === "object") {
       const interaction = type;
-      this.id = interaction.id !== undefined ? interaction.id : idGen.uuidv4();
+      this.id = interaction.id;
       this.entityId1 =
         interaction.entity_id_1 !== undefined ? interaction.entity_id_1 : "";
       this.entityId2 =
