@@ -489,23 +489,25 @@ class MySQL {
 
   /**
    * @param actorEntityId
-   * @param entityDestId
+   * @param entityId1
+   * @param entityId2
    * @return {Promise<Interaction[]>}
    */
-  listInteractions(actorEntityId, entityDestId) {
+  listInteractions(actorEntityId, entityId1, entityId2) {
     let sql =
       "SELECT `id`, `entity_id_1`, `entity_id_2` \n" +
       "FROM `interactions` i\n" +
       "   JOIN `entities_roles` er\n" +
       "       ON (i.`entity_id_1`=er.`subject_entity_id` " +
       "          OR i.`entity_id_2`=er.`subject_entity_id`)\n" +
-      "WHERE er.`actor_entity_id` = ?\n" +
-      "GROUP BY `id`";
-    let data = actorEntityId;
-    if (entityDestId !== undefined) {
-      sql += " AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)";
-      data = [actorEntityId, entityDestId, entityDestId];
+      " WHERE er.`actor_entity_id` = ?\n" +
+      "   AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)\n";
+    let data = [actorEntityId, entityId1, entityId1];
+    if (entityId2 !== undefined) {
+      sql += + "    AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)\n";
+      data.push(entityId2, entityId2);
     }
+    sql += " GROUP BY `id`";
     return this.exec(sql, data).then(result => {
       const interactions = [];
       result.forEach(data => {
