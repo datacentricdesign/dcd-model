@@ -536,8 +536,8 @@ class MySQL {
    */
   readInteractionByEntityId(entityId1, entityId2) {
     const sql = "SELECT * FROM `interactions`\n"
-      + "WHERE `entity_id_1` = ? AND `entity_id_2` = ?`\n"
-      + " OR `entity_id_2` = ? AND `entity_id_1` = ?`";
+      + "WHERE (`entity_id_1` = ? AND `entity_id_2` = ?)\n"
+      + " OR (`entity_id_2` = ? AND `entity_id_1` = ?)";
     return this.exec(sql, [entityId1, entityId2, entityId1, entityId2]).then(result => {
       if (result.length === 1) {
         return Promise.resolve(result[0]);
