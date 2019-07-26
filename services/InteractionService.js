@@ -5,6 +5,8 @@ const log4js = require("log4js");
 const logger = log4js.getLogger("[dcd:interactions]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
+const idGen = require("../lib/id");
+
 class InteractionService {
   /**
    *
@@ -36,6 +38,9 @@ class InteractionService {
             "create: Interaction does not exist, sending it to Kafka"
           );
 
+          if (interaction.id === undefined) {
+            interaction.id = idGen.uuidv4();
+          }
           return this.model.dao
             .createInteraction(interaction)
             .then(() => {
