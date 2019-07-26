@@ -4,7 +4,7 @@ const idGen = require("../lib/id");
 
 class Interaction {
   /**
-   * @param type
+   * @param {string|JSON} type
    * @param entityId1
    * @param entityId2
    * @param properties
@@ -15,9 +15,9 @@ class Interaction {
       const interaction = type;
       this.id = interaction.id !== undefined ? interaction.id : idGen.uuidv4();
       this.entityId1 =
-        interaction.entityId1 !== undefined ? interaction.entityId1 : "";
+        interaction.entity_id_1 !== undefined ? interaction.entity_id_1 : "";
       this.entityId2 =
-        interaction.entityId2 !== undefined ? interaction.entityId2 : "";
+        interaction.entity_id_2 !== undefined ? interaction.entity_id_2 : "";
       this.properties =
         interaction.properties !== undefined ? interaction.properties : [];
     } else {
