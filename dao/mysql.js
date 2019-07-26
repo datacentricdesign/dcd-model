@@ -499,7 +499,8 @@ class MySQL {
       "   JOIN `entities_roles` er\n" +
       "       ON (i.`entity_id_1`=er.`subject_entity_id` " +
       "          OR i.`entity_id_2`=er.`subject_entity_id`)\n" +
-      "WHERE er.`actor_entity_id` = ?";
+      "WHERE er.`actor_entity_id` = ?\n" +
+      "GROUP BY `id`";
     let data = actorEntityId;
     if (entityDestId !== undefined) {
       sql += " AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)";
