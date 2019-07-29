@@ -160,4 +160,8 @@ mysql
   // Test: Delete person
   .then(() => {
     return mysql.deletePerson(person.id);
+  })
+
+  .then(()=> {
+    return mysql.countPropertyByType(property.type)
   });

@@ -682,6 +682,22 @@ class MySQL {
     };
     return this.exec(sql, [insert]);
   }
+
+  /**
+   * @param {string} propertyType
+   * @return {Promise<number>}
+   */
+  countPropertyByType(propertyType) {
+    const sql = "SELECT COUNT(*) AS 'num_property' \n" +
+    "FROM `properties` p \n" +
+    "WHERE p.`type` = ? "
+    return this.exec(sql, [propertyType]).then(result => {
+      console.log('countPropertyByType',result)
+      return result
+    });
+  }
+  
+
 }
 
 module.exports = MySQL;
