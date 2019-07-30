@@ -792,6 +792,7 @@ class MySQL {
       n +
       "`.`property_index_id`";
     sql += " WHERE `p`.type = ?";
+    data.push(propertyType);
     if (from !== undefined && to !== undefined) {
       sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
       data.push(from);
