@@ -15,16 +15,21 @@ class StatsService {
     this.model = newModel;
   }
 
+/**
+   * Get Global stats
+   */
+  getGlobalStats(){
+    return this.model.dao.getGlobalStats()
+    .catch(error => {
+      return Promise.reject(error);
+    });
+  }
 
   /**
    * Get propertyType stats
    */
     getTypeStats(propertyType,from = undefined, to = undefined){
-        return this.model.dao.countPropertyByType(propertyType)
-        .catch(error => {
-            return Promise.reject(error);
-          });
-        /*if (from !== undefined && to !== undefined) {
+        if (from !== undefined && to !== undefined) {
           return this.model.dao.getTypeStats(propertyType, from, to)
             .catch(error => {
             return Promise.reject(error);
@@ -36,7 +41,7 @@ class StatsService {
             .catch(error => {
                 return Promise.reject(error);
               });
-        }*/
+        }
     }
 
 }

@@ -683,19 +683,216 @@ class MySQL {
     return this.exec(sql, [insert]);
   }
 
+
+  /**
+   *
+   * @return {Promise<number>}
+   */
+  countPersons() {
+    const sql = "SELECT COUNT(`id`) AS 'num_persons' \n" +
+    "FROM `persons` p \n" 
+    return this.exec(sql).then(result => {
+      console.log('countPersons',result)
+      return result[0].num_persons
+    });
+  }
+
+  /**
+   *
+   * @return {Promise<number>}
+   */
+  countThings() {
+    const sql = "SELECT COUNT(`id`) AS 'num_things' \n" +
+    "FROM `things` p \n" 
+    return this.exec(sql).then(result => {
+      console.log('countThings',result)
+      return result[0].num_things
+    });
+  }
+
+  /**
+   *
+   * @return {Promise<number>}
+   */
+  countProperties() {
+    const sql = "SELECT COUNT(`id`) AS 'num_properties' \n" +
+    "FROM `properties` p \n" 
+    return this.exec(sql).then(result => {
+      console.log('countProperties',result)
+      return result[0].num_properties
+    });
+  }
+  /**
+   * @return {Promise<Object>}
+   */
+  getGlobalStats(){
+    return this.countPersons()
+    .then(num_persons => {
+      return this.countThings()
+      .then(num_things => {
+        return this.countProperties()
+        .then(num_properties => {
+          return Promise.resolve ({
+            persons : num_persons,
+            things : num_things,
+            properties : num_properties
+          })
+
+          // TODO DETAIL BY TYPE
+        })
+      })
+    })
+  }
+
+
   /**
    * @param {string} propertyType
    * @return {Promise<number>}
    */
-  countPropertyByType(propertyType) {
-    const sql = "SELECT COUNT(*) AS 'num_property' \n" +
+    countPropertiesByType(propertyType) {
+    const sql = "SELECT COUNT(`id`) AS 'num_properties' \n" +
     "FROM `properties` p \n" +
     "WHERE p.`type` = ? "
     return this.exec(sql, [propertyType]).then(result => {
-      console.log('countPropertyByType',result)
-      return result
+      console.log('countPropertiesByType',propertyType,result)
+      return result[0].num_properties
     });
   }
+
+    /**
+   * @param {string} propertyType
+   * @return {Promise<number>}
+   */
+  countEntitiesByType(propertyType) {
+    const sql = "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n" +
+    "FROM `properties` p \n" +
+    "WHERE p.`type` = ? "
+    return this.exec(sql, [propertyType]).then(result => {
+      console.log('countEntityByType',propertyType,result)
+      return result[0].num_entities
+    });
+  }
+
+  /**
+   * @param {string} propertyType
+   * @param {int} from
+   * @param {int} to
+   * @return {Promise<number>}
+   */
+  countValuesByType(propertyType,from,to){
+    if(Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist")
+    }else{
+    const n = Property.types()[propertyType].dimensions.length
+    let sql = "SELECT COUNT(`timestamp`) AS 'num_values' \n";
+    let data = [];
+    sql += "FROM `d" + n + "` ";
+    sql +=
+      " JOIN properties `p` ON p.`index_id` = `d" +
+      n +
+      "`.`property_index_id`";
+    sql += " WHERE `p`.type = ?";
+    if (from !== undefined && to !== undefined) {
+      sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
+      data.push(from);
+      data.push(to);
+    } else if (from !== undefined) {
+      sql += "AND `timestamp` >= ? ORDER BY `timestamp`";
+      data.push(from);
+    } else if (to !== undefined) {
+      sql += "AND `timestamp` <= ? ORDER BY `timestamp`";
+      data.push(to);
+    } else {
+      sql += "ORDER BY `timestamp` DESC LIMIT 1";
+    }
+    return this.exec(sql, data).then(result => {
+      console.log('countValuesByType',result)
+      return result[0].num_values
+    });
+  }
+  }
+
+  /**
+   * @param {string} propertyType
+   * @param {int} from
+   * @param {int} to
+   * @return {Promise<number>}
+   */
+  countIndexPropertiesByType(propertyType,from,to){
+    if(Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist")
+    }else{
+      const n = Property.types()[propertyType].dimensions.length
+      let sql = "SELECT COUNT(DISTINCT `property_index_id`) AS 'num_properties'\n"
+      let data = [];
+      sql += "FROM `d" + n + "` ";
+      sql +=
+        " JOIN properties `p` ON p.`index_id` = `d" +
+        n +
+        "`.`property_index_id`";
+      sql += " WHERE `p`.type = ?";
+      data.push(propertyType);
+      if (from !== undefined && to !== undefined) {
+        sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
+        data.push(from);
+        data.push(to);
+      } else if (from !== undefined) {
+        sql += "AND `timestamp` >= ? ORDER BY `timestamp`";
+        data.push(from);
+      } else if (to !== undefined) {
+        sql += "AND `timestamp` <= ? ORDER BY `timestamp`";
+        data.push(to);
+      } else {
+        sql += "ORDER BY `timestamp` DESC LIMIT 1";
+      }
+      return this.exec(sql, data).then(result => {
+        console.log('countIndexPropertiesByType',result)
+        return result[0].num_properties
+      });
+    }
+  }
+
+  /**
+   * @param {string} propertyType
+   * @param {int} from
+   * @param {int} to
+   * @return {Promise<Object>}
+   */
+  getTypeStats(propertyType,from,to){
+    if(Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist")
+    }else{
+    return this.countPropertiesByType(propertyType)
+    .then(total_properties =>{
+    return this.countEntitiesByType(propertyType)
+    .then(total_entities =>{
+    return this.countValuesByType(propertyType,0,new Date().getTime())
+    .then(total_values => {
+    return this.countIndexPropertiesByType(propertyType,from,to)
+    .then(num_properties => {
+    return this.countValuesByType(propertyType,from,to)
+    .then(num_values =>{
+            return Promise.resolve ({
+              type : propertyType,
+              total_properties : total_properties,
+              total_entities : total_entities,
+              total_values : total_values,
+              range : {
+                  from : from,
+                  to : to,
+                  properties : num_properties,
+                  values : num_values,
+                    }
+              })
+    })
+    })
+    })
+    })
+    })
+  }
+
+
+}
   
 
 }
