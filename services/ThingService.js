@@ -20,7 +20,7 @@ class ThingService {
   /**
    * Create a new Thing.
    *
-   * @param {String} actorId
+   * @param {string} actorId
    * @param {Thing} thing
    * @param {boolean} jwt
    * returns Thing
@@ -85,7 +85,7 @@ class ThingService {
 
   /**
    * List some Things.
-   * @param {String} actorId
+   * @param {string} actorId
    **/
   list(actorId) {
     return this.model.dao.listThings(actorId);
@@ -93,7 +93,7 @@ class ThingService {
 
   /**
    * Read a Thing.
-   * @param {String} id
+   * @param {string} id
    * returns {Thing}
    **/
   read(id) {
@@ -141,7 +141,7 @@ class ThingService {
 
   /**
    * Generate a JWK set of keys for a given thing id.
-   * @param {String} thingId
+   * @param {string} thingId
    * @returns {Promise<Object>}
    */
   generateKeys(thingId) {
