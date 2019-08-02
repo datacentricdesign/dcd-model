@@ -20,6 +20,9 @@ class Thing {
         thing.description !== undefined ? thing.description : "";
       this.type = thing.type !== undefined ? thing.type : "";
       this.properties = thing.properties !== undefined ? thing.properties : [];
+      if (thing.registered_at !== undefined) {
+        this.registeredAt = thing.registered_at;
+      }
     } else {
       this.id = id !== undefined ? id : idGen.toID(name);
       this.name = name;
@@ -38,9 +41,8 @@ class Thing {
         return property;
       }
     }
-    throw new Error('Property not found');
+    throw new Error("Property not found");
   }
-
 }
 
 module.exports = Thing;
