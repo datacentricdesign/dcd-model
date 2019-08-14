@@ -939,7 +939,7 @@ class MySQL {
                     from : from,
                     to : to,
                     properties : num_properties,
-                    entites : num_entities,
+                    entities : num_entities,
                     values : num_values,
                       }
                 })
