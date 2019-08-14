@@ -744,22 +744,7 @@ class MySQL {
     })
   }
 
-
   /**
-   * @param {string} propertyType
-   * @return {Promise<number>}
-   */
-    countPropertiesByType(propertyType) {
-    const sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n" +
-    "FROM `properties` p \n" +
-    "WHERE p.`type` = ? "
-    return this.exec(sql, [propertyType]).then(result => {
-      console.log('countPropertiesByType',propertyType,result)
-      return result[0].num_properties
-    });
-  }
-
-    /**
    * @param {string} propertyType
    * @return {Promise<number>}
    */
@@ -777,31 +762,69 @@ class MySQL {
    * @param {string} propertyType
    * @return {Promise<number>}
    */
+  countPropertiesByType(propertyType) {
+    const sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n" +
+    "FROM `properties` p \n" +
+    "WHERE p.`type` = ? "
+    return this.exec(sql, [propertyType]).then(result => {
+      console.log('countPropertiesByType',propertyType,result)
+      return result[0].num_properties
+    });
+  }
+
+  /**
+   * 
+   * @param {string} propertyType 
+   * @return {Promise<number>}
+   */
+  countValuesByType(propertyType){
+    if(Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist")
+    }else{
+    const n = Property.types()[propertyType].dimensions.length
+    let sql = "SELECT COUNT(`timestamp`) AS 'num_values' \n";
+    sql += "FROM `d" + n + "` ";
+    sql +=
+      " JOIN properties `p` ON p.`index_id` = `d" +
+      n +
+      "`.`property_index_id`";
+    sql += " WHERE `p`.type = ?";
+    return this.exec(sql, [propertyType]).then(result => {
+      console.log('countValuesByType',result)
+      return result[0].num_values
+    });
+  }
+  }
+
+  /**
+   * @param {string} propertyType
+   * @return {Promise<number>}
+   */
   countEntitiesInRangeByType(propertyType,from,to) {
     if(Property.types()[propertyType] === undefined) {
       return Promise.reject(propertyType + " doesn't exist")
     }else{
     const n = Property.types()[propertyType].dimensions.length
-    const sql = "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n"
+    let sql = "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n"
     let data = [];
     sql +="FROM `properties` p"
-    sql +=" JOIN d"+ n +" `d` ON d.`property_index_id` = `p`.`index_id`"
+    sql +=" LEFT JOIN d"+ n +" d ON d.`property_index_id` = `p`.`index_id`"
+    sql += " WHERE p.`type` = ? "
+    data.push(propertyType);
     if (from !== undefined && to !== undefined) {
-      sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
+      sql += "AND d.`timestamp` BETWEEN ? AND ? ORDER BY d.`timestamp`";
       data.push(from);
       data.push(to);
     } else if (from !== undefined) {
-      sql += "AND `timestamp` >= ? ORDER BY `timestamp`";
+      sql += "AND d.`timestamp` >= ? ORDER BY d.`timestamp`";
       data.push(from);
     } else if (to !== undefined) {
-      sql += "AND `timestamp` <= ? ORDER BY `timestamp`";
+      sql += "AND d.`timestamp` <= ? ORDER BY d.`timestamp`";
       data.push(to);
     } else {
-      sql += "ORDER BY `timestamp` DESC LIMIT 1";
+      sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
     }
-    sql += " WHERE p.`type` = ? "
-    data.push(propertyType);
-    return this.exec(sql, [propertyType]).then(result => {
+    return this.exec(sql, data).then(result => {
       console.log('countEntityInRangeByType',propertyType,result)
       return result[0].num_entities
     });
@@ -814,7 +837,44 @@ class MySQL {
    * @param {int} to
    * @return {Promise<number>}
    */
-  countValuesByType(propertyType,from,to){
+  countPropertiesInRangeByType(propertyType,from,to){
+    if(Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist")
+    }else{
+      const n = Property.types()[propertyType].dimensions.length
+      let sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n"
+      let data = [];
+      sql +="FROM `properties` p"
+      sql +=" LEFT JOIN d"+ n +" d ON d.`property_index_id` = `p`.`index_id`"
+      sql += " WHERE p.`type` = ? "
+      data.push(propertyType);
+      if (from !== undefined && to !== undefined) {
+        sql += "AND d.`timestamp` BETWEEN ? AND ? ORDER BY d.`timestamp`";
+        data.push(from);
+        data.push(to);
+      } else if (from !== undefined) {
+        sql += "AND d.`timestamp` >= ? ORDER BY d.`timestamp`";
+        data.push(from);
+      } else if (to !== undefined) {
+        sql += "AND d.`timestamp` <= ? ORDER BY d.`timestamp`";
+        data.push(to);
+      } else {
+        sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
+      }
+      return this.exec(sql, data).then(result => {
+        console.log('countEntityInRangeByType',propertyType,result)
+        return result[0].num_properties
+      });
+    }
+  }
+
+  /**
+   * @param {string} propertyType
+   * @param {int} from
+   * @param {int} to
+   * @return {Promise<number>}
+   */
+  countValuesInRangeByType(propertyType,from,to){
     if(Property.types()[propertyType] === undefined) {
       return Promise.reject(propertyType + " doesn't exist")
     }else{
@@ -852,102 +912,23 @@ class MySQL {
    * @param {string} propertyType
    * @param {int} from
    * @param {int} to
-   * @return {Promise<number>}
-   */
-  countIndexPropertiesByType(propertyType,from,to){
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-      const n = Property.types()[propertyType].dimensions.length
-      let sql = "SELECT COUNT(DISTINCT `property_index_id`) AS 'num_properties'\n"
-      let data = [];
-      sql += "FROM `d" + n + "` ";
-      sql +=
-        " JOIN properties `p` ON p.`index_id` = `d" +
-        n +
-        "`.`property_index_id`";
-      sql += " WHERE `p`.type = ?";
-      data.push(propertyType);
-      if (from !== undefined && to !== undefined) {
-        sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
-        data.push(from);
-        data.push(to);
-      } else if (from !== undefined) {
-        sql += "AND `timestamp` >= ? ORDER BY `timestamp`";
-        data.push(from);
-      } else if (to !== undefined) {
-        sql += "AND `timestamp` <= ? ORDER BY `timestamp`";
-        data.push(to);
-      } else {
-        sql += "ORDER BY `timestamp` DESC LIMIT 1";
-      }
-      return this.exec(sql, data).then(result => {
-        console.log('countIndexPropertiesByType',result)
-        return result[0].num_properties
-      });
-    }
-  }
-
-    /**
-   * @param {string} propertyType
-   * @param {int} from
-   * @param {int} to
-   * @return {Promise<number>}
-   */
-  countPropertiesInRangeByType(propertyType,from,to){
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-      const n = Property.types()[propertyType].dimensions.length
-      const sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n"
-      let data = [];
-      sql +="FROM `properties` p"
-      sql +=" JOIN d"+ n +" `d` ON d.`property_index_id` = `p`.`index_id`"
-      if (from !== undefined && to !== undefined) {
-        sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
-        data.push(from);
-        data.push(to);
-      } else if (from !== undefined) {
-        sql += "AND `timestamp` >= ? ORDER BY `timestamp`";
-        data.push(from);
-      } else if (to !== undefined) {
-        sql += "AND `timestamp` <= ? ORDER BY `timestamp`";
-        data.push(to);
-      } else {
-        sql += "ORDER BY `timestamp` DESC LIMIT 1";
-      }
-      sql += " WHERE p.`type` = ? "
-      data.push(propertyType);
-      return this.exec(sql, [propertyType]).then(result => {
-        console.log('countEntityInRangeByType',propertyType,result)
-        return result[0].num_properties
-      });
-    }
-  }
-
-  /**
-   * @param {string} propertyType
-   * @param {int} from
-   * @param {int} to
    * @return {Promise<Object>}
    */
   getTypeStats(propertyType,from,to){
     if(Property.types()[propertyType] === undefined) {
       return Promise.reject(propertyType + " doesn't exist")
     }else{
-    return this.countPropertiesByType(propertyType)
-    .then(total_properties =>{
     return this.countEntitiesByType(propertyType)
     .then(total_entities =>{
-    return this.countValuesByType(propertyType,0,new Date().getTime())
+    return this.countPropertiesByType(propertyType)
+    .then(total_properties =>{
+    return this.countValuesByType(propertyType)
     .then(total_values => {
-    return this.countIndexPropertiesByType(propertyType,from,to)
-    .then(num_index_properties => {
-    return this.countPropertiesInRangeByType(propertyType,from,to)
-    .then(num_properties => {
     return this.countEntitiesInRangeByType(propertyType,from,to)
     .then(num_entities => {
-    return this.countValuesByType(propertyType,from,to)
+    return this.countPropertiesInRangeByType(propertyType,from,to)
+    .then(num_properties => {
+    return this.countValuesInRangeByType(propertyType,from,to)
     .then(num_values =>{
               return Promise.resolve ({
                 type : propertyType,
@@ -957,13 +938,11 @@ class MySQL {
                 range : {
                     from : from,
                     to : to,
-                    index_properties : num_index_properties,
                     properties : num_properties,
                     entites : num_entities,
                     values : num_values,
                       }
                 })
-    })
     })
     })
     })
