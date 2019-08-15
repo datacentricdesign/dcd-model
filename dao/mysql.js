@@ -732,16 +732,52 @@ class MySQL {
       .then(num_things => {
         return this.countProperties()
         .then(num_properties => {
-          return Promise.resolve ({
+          let json = {
             persons : num_persons,
             things : num_things,
             properties : num_properties
+          }
+          var types = Object.keys(Property.types())
+          return this.getGlobalTypesStats(types,json).then(result =>{
+            //console.log('getGlobalTypesStats',result)
+            return Promise.resolve(result)
           })
-
-          // TODO DETAIL BY TYPE
         })
       })
     })
+  }
+
+  /**
+   * 
+   * @param {String[]} types
+   * @return {Promise<Object>} 
+   */
+  getGlobalTypesStats(types,json){
+    if(types.length == 0){
+      return Promise.resolve(json)
+    }else{
+      let propertyType = types[0]
+      if(Property.types()[propertyType] === undefined) {
+        return Promise.reject(propertyType + " doesn't exist")
+      }else{
+        return this.countEntitiesByType(propertyType)
+        .then(total_entities =>{
+        return this.countPropertiesByType(propertyType)
+        .then(total_properties =>{
+        return this.countValuesByType(propertyType)
+        .then(total_values => {
+          json[propertyType] = {
+            entities : total_entities,
+            properties : total_properties,
+            values : total_values
+          }
+          types.shift()
+          return this.getGlobalTypesStats(types,json)
+        })
+        })
+        })
+      }
+    }
   }
 
   /**
@@ -749,13 +785,17 @@ class MySQL {
    * @return {Promise<number>}
    */
   countEntitiesByType(propertyType) {
+    if(Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist")
+    }else{
     const sql = "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n" +
     "FROM `properties` p \n" +
     "WHERE p.`type` = ? "
     return this.exec(sql, [propertyType]).then(result => {
-      console.log('countEntityByType',propertyType,result)
+      //console.log('countEntityByType',propertyType,result)
       return result[0].num_entities
     });
+  }
   }
 
   /**
@@ -763,13 +803,17 @@ class MySQL {
    * @return {Promise<number>}
    */
   countPropertiesByType(propertyType) {
+    if(Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist")
+    }else{
     const sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n" +
     "FROM `properties` p \n" +
     "WHERE p.`type` = ? "
     return this.exec(sql, [propertyType]).then(result => {
-      console.log('countPropertiesByType',propertyType,result)
+      //console.log('countPropertiesByType',propertyType,result)
       return result[0].num_properties
     });
+  }
   }
 
   /**
@@ -790,7 +834,7 @@ class MySQL {
       "`.`property_index_id`";
     sql += " WHERE `p`.type = ?";
     return this.exec(sql, [propertyType]).then(result => {
-      console.log('countValuesByType',result)
+      //console.log('countValuesByType',result)
       return result[0].num_values
     });
   }
@@ -825,7 +869,7 @@ class MySQL {
       sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
     }
     return this.exec(sql, data).then(result => {
-      console.log('countEntityInRangeByType',propertyType,result)
+      //console.log('countEntityInRangeByType',propertyType,result)
       return result[0].num_entities
     });
   }
@@ -862,7 +906,7 @@ class MySQL {
         sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
       }
       return this.exec(sql, data).then(result => {
-        console.log('countEntityInRangeByType',propertyType,result)
+        //console.log('countEntityInRangeByType',propertyType,result)
         return result[0].num_properties
       });
     }
@@ -902,7 +946,7 @@ class MySQL {
       sql += "ORDER BY `timestamp` DESC LIMIT 1";
     }
     return this.exec(sql, data).then(result => {
-      console.log('countValuesByType',result)
+      //console.log('countValuesByType',result)
       return result[0].num_values
     });
   }
@@ -953,6 +997,83 @@ class MySQL {
 
 
 }
+
+  /**
+   * 
+   * @param {string[]} types 
+   * @param {int} from 
+   * @param {int} to 
+   * @return {Promise<Object>}
+   */
+  getTypesStats(types,from,to){
+    let json = 
+      {
+        types : types,
+        total_properties : 0,
+        total_entities : 0,
+        total_values : 0,
+        range : {
+            from : from,
+            to : to,
+            properties : 0,
+            entities : 0,
+            values : 0,
+              }
+        }
+    return this.fillTypesStatsJson(types,from,to,json).then(result =>{
+      //console.log('fillTypesStatsJson',result)
+      return Promise.resolve(result)
+    })
+  }
+
+  /**
+   * 
+   * @param {string[]} types 
+   * @param {int} from 
+   * @param {int} to 
+   * @param {object} json 
+   * @return {Promise<Object>}
+   */
+  fillTypesStatsJson(types,from,to,json){
+    if(types.length == 0){
+      return Promise.resolve(json)
+    }else{
+      let propertyType = types[0]
+      if(Property.types()[propertyType] === undefined) {
+        return Promise.reject(propertyType + " doesn't exist")
+      }else{
+        return this.countEntitiesByType(propertyType)
+        .then(total_entities =>{
+        return this.countPropertiesByType(propertyType)
+        .then(total_properties =>{
+        return this.countValuesByType(propertyType)
+        .then(total_values => {
+        return this.countEntitiesInRangeByType(propertyType,from,to)
+        .then(num_entities => {
+        return this.countPropertiesInRangeByType(propertyType,from,to)
+        .then(num_properties => {
+        return this.countValuesInRangeByType(propertyType,from,to)
+        .then(num_values =>{
+        
+          json.total_entities += total_entities
+          json.total_properties += total_properties
+          json.total_values += total_values
+          json.range.entities+= num_entities
+          json.range.properties += num_properties
+          json.range.values += num_values
+
+          types.shift()
+          return this.fillTypesStatsJson(types,from,to,json)
+
+      })
+      })
+      })
+      })
+      })
+      })
+      }
+    }
+  }
   
 
 }
