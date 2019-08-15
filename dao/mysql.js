@@ -953,52 +953,6 @@ class MySQL {
   }
 
   /**
-   * @param {string} propertyType
-   * @param {int} from
-   * @param {int} to
-   * @return {Promise<Object>}
-   */
-  getTypeStats(propertyType,from,to){
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-    return this.countEntitiesByType(propertyType)
-    .then(total_entities =>{
-    return this.countPropertiesByType(propertyType)
-    .then(total_properties =>{
-    return this.countValuesByType(propertyType)
-    .then(total_values => {
-    return this.countEntitiesInRangeByType(propertyType,from,to)
-    .then(num_entities => {
-    return this.countPropertiesInRangeByType(propertyType,from,to)
-    .then(num_properties => {
-    return this.countValuesInRangeByType(propertyType,from,to)
-    .then(num_values =>{
-              return Promise.resolve ({
-                type : propertyType,
-                total_properties : total_properties,
-                total_entities : total_entities,
-                total_values : total_values,
-                range : {
-                    from : from,
-                    to : to,
-                    properties : num_properties,
-                    entities : num_entities,
-                    values : num_values,
-                      }
-                })
-    })
-    })
-    })
-    })
-    })
-    })
-  }
-
-
-}
-
-  /**
    * 
    * @param {string[]} types 
    * @param {int} from 
