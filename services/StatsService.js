@@ -48,7 +48,6 @@ class StatsService {
    * Get propertyTypes stats
    */
   getTypesStats(propertyTypes,from = undefined, to = undefined){
-    console.log('service',propertyTypes)
     if (from !== undefined && to !== undefined) {
       return this.model.dao.getTypesStats(propertyTypes, from, to)
         .catch(error => {

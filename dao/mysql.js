@@ -1008,7 +1008,7 @@ class MySQL {
   getTypesStats(types,from,to){
     let json = 
       {
-        types : types,
+        types : [],
         total_properties : 0,
         total_entities : 0,
         total_values : 0,
@@ -1054,15 +1054,14 @@ class MySQL {
         .then(num_properties => {
         return this.countValuesInRangeByType(propertyType,from,to)
         .then(num_values =>{
-        
+          
           json.total_entities += total_entities
           json.total_properties += total_properties
           json.total_values += total_values
           json.range.entities+= num_entities
           json.range.properties += num_properties
           json.range.values += num_values
-
-          types.shift()
+          json.types.push(types.shift())
           return this.fillTypesStatsJson(types,from,to,json)
 
       })
