@@ -10,3 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- TODO: Entities Task and Resource
+- TODO: DAO Task and Resource
+- TODO: Service Task and Resource
