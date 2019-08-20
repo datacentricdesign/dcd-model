@@ -2,7 +2,9 @@ const ThingService = require("./services/ThingService");
 const InteractionService = require("./services/InteractionService");
 const PersonService = require("./services/PersonService");
 const PropertyService = require("./services/PropertyService");
-const StatsService = require("./services/StatsService")
+const StatService = require("./services/StatService")
+const TaskService = require("./services/TaskService")
+
 const MySQL = require("./dao/mysql");
 
 const Kafka = require("./dao/kafka");
@@ -47,7 +49,8 @@ class DCDModel {
     this.interactions = new InteractionService(this);
     this.persons = new PersonService(this);
     this.properties = new PropertyService(this);
-    this.stats = new StatsService(this)
+    this.stats = new StatService(this)
+    this.tasks = new TaskService(this)
   }
 }
 
