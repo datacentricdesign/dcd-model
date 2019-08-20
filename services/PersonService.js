@@ -8,9 +8,6 @@ logger.level = process.env.LOG_LEVEL || "INFO";
 const Person = require("../entities/Person");
 const policies = require("../lib/policies");
 
-const grafana = require("../lib/grafana");
-grafana.getAPIKey();
-
 class PersonService {
   /**
    *
@@ -61,9 +58,6 @@ class PersonService {
               })
               .then(() => {
                 return grafana.createGlobalUser(person);
-              })
-              .then(result => {
-                return grafana.updateOrgUserRole("1", result.id, "Editor");
               })
               .then(() => {
                 logger.debug(person.id);
