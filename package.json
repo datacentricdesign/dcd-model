@@ -1,6 +1,6 @@
 {
   "name": "@datacentricdesign/model",
-  "version": "0.0.4-feature.designer-task",
+  "version": "0.0.5-feature.designer-task",
   "description": "Model of the Data-Centric-Design Hub",
   "main": "index.js",
   "scripts": {
