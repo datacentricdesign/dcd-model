@@ -19,12 +19,9 @@ class TaskService {
    * @param {Task} task 
    * @returns {Object} Task
    */
-  create(/*actorId,*/task){
+  create(task){
     return this.model.dao
     .createTask(task)
-    /*.then(() => {
-        return this.model.dao.createRole(task.id, actorId, "owner");
-      })*/ //Not usefull from now
     .then(()=>{
         return this.model.dao.createResources(task)
     })
@@ -65,8 +62,8 @@ class TaskService {
    * Delete a Task
    * @param {string} taskId 
    */
-  del(taskId){
-    return this.model.dao.deleteTask(taskId)
+  del(taskId,actorId){
+    return this.dao.deleteTask(taskId,actorId)
   }
 
   /**
@@ -82,6 +79,21 @@ class TaskService {
     }else{
       return this.model.dao.readSubjectResources(taskId,personId)
     }
+  }
+
+  /**
+   * Add a milestone to a resource of a task
+   * @param {Object} milestone 
+   * @param {string} personId 
+   */
+  addMilestone(milestone,personId){
+    return this.model.dao.checkSubject(milestone.resource_id,personId)
+    .then(() => {
+      return this.model.dao.addMilestone(milestone)
+    })
+    .catch(error => {
+      return Promise.reject(error);
+    });
   }
 
 }

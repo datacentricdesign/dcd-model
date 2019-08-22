@@ -1055,10 +1055,9 @@ class MySQL {
     let t = JSON.parse(JSON.stringify(task))
     return this.getArrayResources(t)
     .then(resources => {
-        console.log('getArrayResources',resources)
       return this.insertResources(resources)
       .then(num_resources_created =>{
-        console.log('insertResources',num_resources_created)
+        console.log(num_resources_created + " resources created")
         return Promise.resolve(num_resources_created)
       })
     })
@@ -1066,27 +1065,34 @@ class MySQL {
 
   /**
    * @param {Task} task 
-   * @returns {Promise<Resource[]>}
+   * @returns {Promise<Resource[]>} Array of resources of a task in the DB
    */
   getArrayResources(task,empty_json = {}){
     if(task.types.length == 0){
-      person_ids = Object.keys(empty_json) 
+      let person_ids = Object.keys(empty_json) 
       let resources = []
       let now  = Date.now()
       person_ids.forEach(person_id => {
+
+        let milestones = [
+          {
+            timestamp : Date.now(),
+            shared_properties : empty_json[person_id].join(),
+            status : "unread"
+          }
+        ]
+
         resources.push(new Resource(
           task.id,
           person_id,
-          [
-            [now,
-              empty_json[person_id].join(),
-              "unread"]
-          ]
+          milestones
           ))
       })
       return Promise.resolve(resources);
     }else{
       let propertyType = task.types[0]
+      let from = task.from
+      let to = task.to
       if(Property.types()[propertyType] === undefined) {
         return Promise.reject(propertyType + " doesn't exist")
       }else{
@@ -1105,7 +1111,8 @@ class MySQL {
   /**
    * @param {String} propertyType 
    * @param {int} from 
-   * @param {int} to 
+   * @param {int} to
+   * @returns {Array} array of object with property id and entity_id 
    */
   findPropertiesInRangeByType(propertyType,from,to){
       if(Property.types()[propertyType] === undefined) {
@@ -1131,23 +1138,30 @@ class MySQL {
           sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
         }
         return this.exec(sql, data).then(result => {
-          console.log('FindPropertiesInRangeByType',propertyType,result)
-          return result
+          let array =[]
+          result.forEach(r => {
+            if (!(array.some(e => e.id === r.id))) {
+              /* array not contains the element we're looking for */
+              array.push(r)
+            }
+          })
+          return array
         });
       }
   }
 
   /**
-   * @param {String[][]} array 
+   * @param {String[][]} array Array of object property id and entity
    * @param {Object} json 
+   * @returns {Object} A json with persons id in keys and array of property id in values
    */
   remplaceEntityByOwner(array,json){
     if(array.length == 0){
       return Promise.resolve(json)
     }
     else{
-      let propertyId = array[0][0]
-      let entityId = array[0][1]
+      let propertyId = array[0].id
+      let entityId = array[0].entity_id
       return this.findOwner(entityId)
       .then(personId=>{
         if(json.hasOwnProperty(personId)){
@@ -1163,13 +1177,14 @@ class MySQL {
 
   /**
    * @param {String} entityId 
+   * @returns {String} personId (owner of the entityId)
    */
   findOwner(entityId){
     let sql = "SELECT actor_entity_id FROM `entities_roles`\n" + " WHERE `subject_entity_id` = ? ";
     const data = [entityId];
     return this.exec(sql, data).then(result => {
       if (result.length === 1) {
-        return Promise.resolve(result[0]);
+        return Promise.resolve(result[0].actor_entity_id);
       } else {
         return Promise.reject({ code: 404, message: "Not Found" });
       }
@@ -1181,7 +1196,7 @@ class MySQL {
    */
   insertResources(resources,size = 0){
     if(resources.length == 0){
-      Promise.resolve(size)
+      return Promise.resolve(size)
     }else{
       size ++
       let resource = resources[0]
@@ -1207,11 +1222,12 @@ class MySQL {
     .then(() => {
       const sql = "INSERT INTO `milestones` SET ?"
       const first_milestone = resource.milestones[0]
+
       const insert_milestone = {
         resource_id :resource.id,
-        timestamp : first_milestone[0],
-        shared_properties : first_milestone[1],
-        status : first_milestone[2]
+        timestamp : first_milestone.timestamp,
+        shared_properties : first_milestone.shared_properties,
+        status : first_milestone.status
       }
       return this.exec(sql,[insert_milestone])
     })
@@ -1225,9 +1241,11 @@ class MySQL {
   listTasks(personId){
     return this.listActorTasks(personId)
     .then(actor_tasks=>{
+      //console.log(actor_tasks)
       return this.listSubjectTasks(personId)
       .then(subject_tasks => {
-        Promise.resolve({
+        //console.log(subject_tasks)
+        return Promise.resolve({
           actor_tasks : actor_tasks,
           subject_tasks : subject_tasks
         })
@@ -1258,8 +1276,8 @@ class MySQL {
    */
   listSubjectTasks(subjectEntityId) {
     const sql =
-    "SELECT * FROM `tasks` t\n" +
-      "   JOIN `resources` r ON t.`id`=r.`subject_entity_id`\n" +
+    "SELECT t.`id`, t.`name`, t.`description`, t.`types`, t.`from`, t.`to`, t.`actor_entity_id`, t.`registered_at`  FROM `tasks` t\n" +
+      "   JOIN `resources` r ON t.`id`=r.`task_id`\n" +
       "WHERE r.`subject_entity_id` = ?";
     return this.exec(sql, [subjectEntityId]).then(result => {
       const tasks = [];
@@ -1289,9 +1307,11 @@ class MySQL {
    * @param {String} taskId
    * @returns {Promise}
    */
-  deleteTask(taskId) {
-    const sql = "DELETE FROM `tasks` WHERE `id` = ?";
-    return this.exec(sql, [taskId]);
+  deleteTask(taskId,actorEntityId) {
+    //From now we check if the actor_entity_id match for delete => not the good way ? => keto
+    const sql = "DELETE FROM `tasks` WHERE `id` = ? AND `actor_entity_id` = ?";
+    return this.exec(sql, [taskId,actorEntityId])
+    //Then delete ressource Then delete milestones ?
   }
 
   /**
@@ -1302,9 +1322,8 @@ class MySQL {
    */
   readActorResources(taskId,actorEntityId){
     const sql =
-      "SELECT `id`, `task_id`  \n" +
-      "FROM `resources` r\n" +
-      "   JOIN `tasks` t ON r.`task_id`=t.`id`\n" +
+      "SELECT r.`id`, r.`task_id`  FROM `resources` r\n" +
+      "   JOIN `tasks` t ON r.`task_id`= t.`id`\n" +
       "WHERE t.`id` = ? AND t.`actor_entity_id` = ? ";
     const data = [taskId, actorEntityId];
     return this.exec(sql, data).then(result => {
@@ -1329,10 +1348,14 @@ class MySQL {
     });
   }
 
+  /**
+   * @param {Array} data array of object from the resources table
+   * @param {Array} resources empty array
+   * @returns {Promise<Resource[]>} ressources with milestones
+   */
   RecupMilestones(data,resources = []){
     if(data.length == 0){
-      console.log('RecupMilestones',resources)
-      Promise.resolve(resources)
+      return Promise.resolve(resources)
     }else{
       let resourceId = data[0].id
       let taskId = data[0].task_id
@@ -1344,13 +1367,19 @@ class MySQL {
           result,
           resourceId
         ))
+          data.shift()
         return this.RecupMilestones(data,resources)
       })
     }
   }
 
+  /**
+   * @param {String} resourceId 
+   * @returns {Array} array of object from table milestones
+   */
   readMilestones(resourceId){
-    const sql = "SELECT * FROM `milestones`\n" + "WHERE `resource_id` = ? ORDER BY `timestamp`";
+    const sql = "SELECT `timestamp`, `shared_properties`,`status` FROM `milestones`\n" + 
+    "WHERE `resource_id` = ? ORDER BY `timestamp`";
     return this.exec(sql, resourceId).then(result => {
       if (result.length > 0) {
         return Promise.resolve(result);
@@ -1359,6 +1388,32 @@ class MySQL {
       }
     });
   }
+
+  /**
+   * @param {String} resourceId 
+   * @param {String} subjectEntityId
+   * @returns {Boolean} the subject is th owner 
+   */
+  checkSubject(resourceId,subjectEntityId){
+    let sql = "SELECT * FROM `resources`\n" + " WHERE `id` = ? AND `subject_entity_id` = ? ";
+    const data = [resourceId,subjectEntityId];
+    return this.exec(sql, data).then(result => {
+      if (result.length === 1) {
+        return Promise.resolve(true);
+      } else {
+        return Promise.reject({ code: 403, message: "Forbidden, your are not the owner of the resource" });
+      }
+    });
+  }
+
+  /**
+   * @param {Object} milestone 
+   */
+  addMilestone(milestone){
+    const sql = "INSERT INTO `milestones` SET ?"
+      return this.exec(sql,[milestone])
+  }
+
 
 }
 
