@@ -1029,7 +1029,7 @@ class MySQL {
     }
   }
 
-  /**
+    /**
    *
    * @param {Task} task
    * @returns {Promise}
@@ -1071,7 +1071,6 @@ class MySQL {
     if(task.types.length == 0){
       let person_ids = Object.keys(empty_json) 
       let resources = []
-      let now  = Date.now()
       person_ids.forEach(person_id => {
 
         let milestones = [
@@ -1241,10 +1240,8 @@ class MySQL {
   listTasks(personId){
     return this.listActorTasks(personId)
     .then(actor_tasks=>{
-      //console.log(actor_tasks)
       return this.listSubjectTasks(personId)
       .then(subject_tasks => {
-        //console.log(subject_tasks)
         return Promise.resolve({
           actor_tasks : actor_tasks,
           subject_tasks : subject_tasks

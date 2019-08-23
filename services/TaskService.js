@@ -61,6 +61,7 @@ class TaskService {
   /**
    * Delete a Task
    * @param {string} taskId 
+   * @param {string} actorId
    */
   del(taskId,actorId){
     return this.dao.deleteTask(taskId,actorId)
@@ -84,10 +85,10 @@ class TaskService {
   /**
    * Add a milestone to a resource of a task
    * @param {Object} milestone 
-   * @param {string} personId 
+   * @param {string} subjectId 
    */
-  addMilestone(milestone,personId){
-    return this.model.dao.checkSubject(milestone.resource_id,personId)
+  addMilestone(milestone,subjectId){
+    return this.model.dao.checkSubject(milestone.resource_id,subjectId)
     .then(() => {
       return this.model.dao.addMilestone(milestone)
     })
