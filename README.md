@@ -1,5 +1,9 @@
 # Data-Centric Design Model
 
+![GitHub package.json version](https://img.shields.io/github/package-json/v/datacentricdesign/dcd-model)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/datacentricdesign/dcd-model)
+![node](https://img.shields.io/node/v/@datacentricdesign/model)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
