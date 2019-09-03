@@ -1,12 +1,12 @@
 {
   "name": "dcd-model",
-  "version": "0.0.135-develop",
+  "version": "0.0.136-develop",
   "description": "Model of the Data-Centric-Design Hub",
   "main": "index.js",
   "scripts": {
-    "test-auth": "NODE_ENV=test KAFKA=true MODEL_HOST=192.168.1.101 LOG_LEVEL=DEBUG API_URL=http://192.168.1.101:8080 KETO_URL=http://192.168.1.101:4466 HYDRA_URL=http://192.168.1.101:4444 OAUTH2_TOKEN_URL=http://192.168.1.101:4444/oauth2/token OAUTH2_CLIENT_ID=dcd-http-api OAUTH2_CLIENT_SECRET=introspection-secret mocha 'tests/*.test.js'",
-    "test-mysql": "NODE_ENV=test KAFKA=true MODEL_HOST=192.168.1.101 LOG_LEVEL=DEBUG CRYPTO_KEY=cryptoKeyToChange node 'tests/MySQL.test.js'",
-    "test-service": "NODE_ENV=test KAFKA=true MODEL_HOST=192.168.1.101 LOG_LEVEL=DEBUG CRYPTO_KEY=cryptoKeyToChange API_URL=http://192.168.1.101:8080 KETO_URL=http://192.168.1.101:4466 HYDRA_URL=http://192.168.1.101:4444 OAUTH2_TOKEN_URL=http://192.168.1.101:4444/oauth2/token OAUTH2_CLIENT_ID=dcd-http-api OAUTH2_CLIENT_SECRET=introspection-secret node 'tests/Service.test.js'"
+    "test-auth": "mocha 'tests/*.test.js'",
+    "test-mysql": "node 'tests/MySQL.test.js'",
+    "test-service": "node 'tests/Service.test.js'"
   },
   "repository": {
     "type": "git",
@@ -24,10 +24,10 @@
     "kafka-node": "4.1.3",
     "log4js": "4.4.0",
     "mysql": "2.17.1",
-    "node-fetch": "^2.6.0",
-    "prettier": "^1.18.2",
-    "querystring": "^0.2.0",
-    "simple-oauth2": "2.2.1",
+    "node-fetch": "2.6.0",
+    "prettier": "1.18.2",
+    "querystring": "0.2.0",
+    "simple-oauth2": "2.4.0",
     "url": "0.11.0"
   },
   "devDependencies": {
