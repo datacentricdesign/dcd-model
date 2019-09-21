@@ -57,9 +57,6 @@ class PersonService {
                 return createPersonCRUDPolicy(person.id);
               })
               .then(() => {
-                return grafana.createGlobalUser(person);
-              })
-              .then(() => {
                 logger.debug(person.id);
                 return Promise.resolve(person.id);
               })
