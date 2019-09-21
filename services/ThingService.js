@@ -114,6 +114,62 @@ class ThingService {
   }
 
   /**
+   * Grant a role on a Thing to an Entity
+   * @param {string} actorType (persons or things)
+   * @param {string} actorId
+   * @param {string} thingId
+   * @param {string} role
+   * returns Promise
+   **/
+  grant(actorType, actorId, thingId, role) {
+    return this.model.dao.createRole(thingId, actorId, role).then(() => {
+      const actor = "dcd:" + actorType + ":" + actorId;
+      const subject = "dcd:things:" + thingId;
+      const acp = {
+        id: actor + "-" + subject + "-" + role + "-policy",
+        effect: "allow",
+        actions: policies.roleToActions(role),
+        subjects: [subject],
+        resources: [
+          subject,
+          subject + ":properties",
+          subject + ":properties:<.*>"
+        ]
+      };
+      logger.debug("ACP: " + JSON.stringify(acp));
+      return policies.create(acp);
+    });
+  }
+
+  /**
+   * R a role on a Thing to an Entity
+   * @param {string} actorType (persons or things)
+   * @param {string} actorId
+   * @param {string} thingId
+   * @param {string} role
+   * returns Promise
+   **/
+  revoke(actorType, actorId, thingId, role) {
+    return this.model.dao.deleteRole(thingId, actorId, role).then(() => {
+      const actor = "dcd:" + actorType + ":" + actorId;
+      const subject = "dcd:things:" + thingId;
+      const acp = {
+        id: actor + "-" + subject + "-" + role + "-policy",
+        effect: "deny",
+        actions: policies.roleToActions(role),
+        subjects: [subject],
+        resources: [
+          subject,
+          subject + ":properties",
+          subject + ":properties:<.*>"
+        ]
+      };
+      logger.debug("ACP: " + JSON.stringify(acp));
+      return policies.create(acp);
+    });
+  }
+
+  /**
    * Update a Thing
    * @param thingId
    * returns Promise
@@ -167,7 +223,7 @@ function createAccessPolicy(thingId) {
   const thingPolicy = {
     id: thingId + "-" + thingId + "-cru-policy",
     effect: "allow",
-    actions: ["dcd:actions:create", "dcd:actions:read", "dcd:actions:update"],
+    actions: policies.roleToActions("subject"),
     subjects: ["dcd:things:" + thingId],
     resources: [
       "dcd:things:" + thingId,
@@ -189,13 +245,7 @@ function createOwnerAccessPolicy(thingId, subject) {
   const thingOwnerPolicy = {
     id: thingId + "-" + subject + "-clrud-policy",
     effect: "allow",
-    actions: [
-      "dcd:actions:create",
-      "dcd:actions:list",
-      "dcd:actions:read",
-      "dcd:actions:update",
-      "dcd:actions:delete"
-    ],
+    actions: policies.roleToActions("owner"),
     subjects: [subject],
     resources: [
       "dcd:things:" + thingId,

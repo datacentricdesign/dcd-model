@@ -55,20 +55,22 @@ class MySQL {
     return new Promise((resolve, reject) => {
       this.pool.getConnection((error, connection) => {
         if (error) {
-          reject(error);
+          return reject(error);
+        } else if (connection === undefined) {
+          return reject(new error("MySQL connection undefined."));
         }
         const q = connection.query(sql, data, (error, result) => {
           logger.debug(q.sql);
           connection.release();
           if (error !== null) {
             if (error.code === "ER_DUP_ENTRY") {
-              reject({ error: 400, message: "Already exists" });
+              return reject({ error: 400, message: "Already exists" });
             } else {
-              reject({ error: 500, message: "Server Error" });
-              logger.error(error + "\n" + q.sql, this.name);
+              logger.error(error + "\n" + q.sql);
+              return reject({ error: 500, message: "Server Error" });
             }
           } else {
-            resolve(result);
+            return resolve(result);
           }
         });
       });
@@ -681,6 +683,16 @@ class MySQL {
       role: role
     };
     return this.exec(sql, [insert]);
+  }
+
+  deleteRole(subjectId, actorId, role) {
+    const sql = "DELETE FROM `entities_roles` WHERE ?";
+    const del = {
+      subject_entity_id: subjectId,
+      actor_entity_id: actorId,
+      role: role
+    };
+    return this.exec(sql, [del]);
   }
 
 
