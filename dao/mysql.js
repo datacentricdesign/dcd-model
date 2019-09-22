@@ -686,15 +686,11 @@ class MySQL {
   }
 
   deleteRole(subjectId, actorId, role) {
-    const sql = "DELETE FROM `entities_roles` WHERE ?";
-    const del = {
-      subject_entity_id: subjectId,
-      actor_entity_id: actorId,
-      role: role
-    };
-    return this.exec(sql, [del]);
+    const sql =
+      "DELETE FROM `entities_roles` \n" +
+      "WHERE `subject_entity_id` = ? AND `actor_entity_id` = ? AND `role` = ?";
+    return this.exec(sql, [subjectId, actorId, role]);
   }
-
 
   /**
    *
