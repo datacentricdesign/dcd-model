@@ -612,11 +612,11 @@ class MySQL {
     for (let i = 1; i <= property.dimensions.length; i++) {
       sql += ",`value" + i + "`";
     }
-    sql += "FROM `d" + property.dimensions.length + "` ";
-    sql +=
-      " JOIN properties `p` ON p.`index_id` = `d" +
-      property.dimensions.length +
-      "`.`property_index_id`";
+    let table = "d" + property.dimensions.length;
+    if (property.type === "TEXT") table = "dtext";
+    sql += " FROM `" + table + "` \n"
+        + " JOIN properties `p` \n"
+        + "ON p.`index_id` = `" + table + "`.`property_index_id`";
     sql += " WHERE `p`.id = ?";
     data.push(property.id);
     if (from !== undefined && to !== undefined) {
@@ -702,7 +702,7 @@ class MySQL {
    */
   countPersons() {
     const sql = "SELECT COUNT(`id`) AS 'num_persons' \n" +
-    "FROM `persons` p \n" 
+    "FROM `persons` p \n"
     return this.exec(sql).then(result => {
       console.log('countPersons',result)
       return result[0].num_persons
@@ -715,7 +715,7 @@ class MySQL {
    */
   countThings() {
     const sql = "SELECT COUNT(`id`) AS 'num_things' \n" +
-    "FROM `things` p \n" 
+    "FROM `things` p \n"
     return this.exec(sql).then(result => {
       console.log('countThings',result)
       return result[0].num_things
@@ -728,7 +728,7 @@ class MySQL {
    */
   countProperties() {
     const sql = "SELECT COUNT(`id`) AS 'num_properties' \n" +
-    "FROM `properties` p \n" 
+    "FROM `properties` p \n"
     return this.exec(sql).then(result => {
       console.log('countProperties',result)
       return result[0].num_properties
@@ -760,9 +760,9 @@ class MySQL {
   }
 
   /**
-   * 
+   *
    * @param {String[]} types
-   * @return {Promise<Object>} 
+   * @return {Promise<Object>}
    */
   getGlobalTypesStats(types,json){
     if(types.length == 0){
@@ -829,8 +829,8 @@ class MySQL {
   }
 
   /**
-   * 
-   * @param {string} propertyType 
+   *
+   * @param {string} propertyType
    * @return {Promise<number>}
    */
   countValuesByType(propertyType){
@@ -965,14 +965,14 @@ class MySQL {
   }
 
   /**
-   * 
-   * @param {string[]} types 
-   * @param {int} from 
-   * @param {int} to 
+   *
+   * @param {string[]} types
+   * @param {int} from
+   * @param {int} to
    * @return {Promise<Object>}
    */
   getTypesStats(types,from,to){
-    let json = 
+    let json =
       {
         types : [],
         total_properties : 0,
@@ -993,11 +993,11 @@ class MySQL {
   }
 
   /**
-   * 
-   * @param {string[]} types 
-   * @param {int} from 
-   * @param {int} to 
-   * @param {object} json 
+   *
+   * @param {string[]} types
+   * @param {int} from
+   * @param {int} to
+   * @param {object} json
    * @return {Promise<Object>}
    */
   fillTypesStatsJson(types,from,to,json){
@@ -1020,7 +1020,7 @@ class MySQL {
         .then(num_properties => {
         return this.countValuesInRangeByType(propertyType,from,to)
         .then(num_values =>{
-          
+
           json.total_entities += total_entities
           json.total_properties += total_properties
           json.total_values += total_values
@@ -1039,7 +1039,7 @@ class MySQL {
       }
     }
   }
-  
+
 
 }
 
