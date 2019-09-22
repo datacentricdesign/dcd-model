@@ -129,7 +129,7 @@ class ThingService {
         id: actor + "-" + subject + "-" + role + "-policy",
         effect: "allow",
         actions: policies.roleToActions(role),
-        subjects: [subject],
+        subjects: [actor],
         resources: [
           subject,
           subject + ":properties",
