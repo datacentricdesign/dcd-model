@@ -128,7 +128,7 @@ class MySQL {
       dimensions = this.propertyIndexMap[property.id];
     } else {
       const sqlId =
-        "SELECT p.`index_id`," +
+        "SELECT p.`index_id`, p.`type`," +
         " COUNT(*) AS 'num_dimensions' \n" +
         "FROM `properties` p \n" +
         "  JOIN `dimensions` d" +
@@ -141,16 +141,16 @@ class MySQL {
         }
         this.propertyIndexMap[property.id] = {
           index: result[0].index_id,
+          type: result[0].type,
           num_dimensions: result[0].num_dimensions
         };
         return this.updatePropertyValues(property);
       });
     }
 
-    let sql =
-      "INSERT IGNORE INTO `d" +
-      dimensions.num_dimensions +
-      "` (`property_index_id`, `timestamp`";
+    let sql = "INSERT IGNORE INTO `d";
+    sql += dimensions.type === "TEXT" ? "text" : dimensions.num_dimensions;
+    sql += "` (`property_index_id`, `timestamp`";
     for (let index = 1; index <= dimensions.num_dimensions; index++) {
       sql += ",`value" + index + "`";
     }

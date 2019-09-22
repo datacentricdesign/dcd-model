@@ -136,6 +136,17 @@ class Property {
 }
 
 const Types = {
+  TEXT: {
+    name: "Text",
+    description: "",
+    dimensions: [
+      {
+        name: "Text",
+        description: "",
+        unit: ""
+      }
+    ]
+  },
   ACCELEROMETER: {
     name: "Accelerometer",
     description:
