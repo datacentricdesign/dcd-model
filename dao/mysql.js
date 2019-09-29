@@ -67,7 +67,8 @@ class MySQL {
             if (error.code === "ER_DUP_ENTRY") {
               return reject(new DCDError(4006, "Already exists"));
             } else {
-              return reject(new DCDError(500, q.sql));
+              logger.error(q.sql);
+              return reject(new DCDError(500, error.message));
             }
           } else {
             return resolve(result);
@@ -396,7 +397,7 @@ class MySQL {
     const sql =
       "SELECT `id`, `name`  \n" +
       "FROM `persons` t\n" +
-      "   JOIN `entities_roles` er ON t.`id`=er.`subject_entity_id`\n" +
+      "   JOIN `roles` er ON t.`id`=er.`subject_entity_id`\n" +
       "WHERE er.`actor_entity_id` = ?";
     return this.exec(sql, [actorEntityId]).then(result => {
       const persons = [];
@@ -415,7 +416,7 @@ class MySQL {
     const sql =
       "SELECT `id`, `name`, `description`, `type` \n" +
       "FROM `things` t\n" +
-      "   JOIN `entities_roles` er ON t.`id`=er.`subject_entity_id`\n" +
+      "   JOIN `roles` er ON t.`id`=er.`subject_entity_id`\n" +
       "WHERE er.`actor_entity_id` = ?";
     return this.exec(sql, actorEntityId).then(result => {
       const things = [];
@@ -499,7 +500,7 @@ class MySQL {
     let sql =
       "SELECT `id`, `entity_id_1`, `entity_id_2` \n" +
       "FROM `interactions` i\n" +
-      "   JOIN `entities_roles` er\n" +
+      "   JOIN `roles` er\n" +
       "       ON (i.`entity_id_1`=er.`subject_entity_id` " +
       "          OR i.`entity_id_2`=er.`subject_entity_id`)\n" +
       " WHERE er.`actor_entity_id` = ?\n" +
@@ -676,7 +677,7 @@ class MySQL {
   }
 
   createRole(actorId, subjectId, roleName) {
-    const sql = "INSERT IGNORE INTO `entities_roles` SET ?";
+    const sql = "INSERT IGNORE INTO `roles` SET ?";
     const insert = {
       actor_entity_id: actorId,
       subject_entity_id: subjectId,
@@ -687,14 +688,14 @@ class MySQL {
 
   deleteRole(actorId, subjectId, roleName) {
     const sql =
-      "DELETE FROM `entities_roles` \n" +
+      "DELETE FROM `roles` \n" +
       "WHERE `actor_entity_id` = ? AND `subject_entity_id` = ? AND `role` = ?";
     return this.exec(sql, [actorId, subjectId, roleName]);
   }
 
   readRoleId(actorId, subjectId, roleName) {
     const sql =
-      "SELECT `id`  FROM `entities_roles` \n" +
+      "SELECT `id`  FROM `roles` \n" +
       "WHERE `actor_entity_id` = ? AND `subject_entity_id` = ? AND `role` = ?";
     return this.exec(sql, [actorId, subjectId, roleName]);
   }
