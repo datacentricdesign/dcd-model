@@ -395,10 +395,10 @@ class MySQL {
    */
   listPersons(actorEntityId) {
     const sql =
-      "SELECT `id`, `name`  \n" +
-      "FROM `persons` t\n" +
-      "   JOIN `roles` er ON t.`id`=er.`subject_entity_id`\n" +
-      "WHERE er.`actor_entity_id` = ?";
+      "SELECT p.`id` AS 'id', `name`  \n" +
+      "FROM `persons` p\n" +
+      "   JOIN `roles` r ON p.`id`=r.`subject_entity_id`\n" +
+      "WHERE r.`actor_entity_id` = ?";
     return this.exec(sql, [actorEntityId]).then(result => {
       const persons = [];
       result.forEach(p => {
@@ -414,10 +414,10 @@ class MySQL {
    */
   listThings(actorEntityId) {
     const sql =
-      "SELECT `id`, `name`, `description`, `type` \n" +
+      "SELECT t.`id` AS 'id', `name`, `description`, `type` \n" +
       "FROM `things` t\n" +
-      "   JOIN `roles` er ON t.`id`=er.`subject_entity_id`\n" +
-      "WHERE er.`actor_entity_id` = ?";
+      "   JOIN `roles` r ON t.`id`=r.`subject_entity_id`\n" +
+      "WHERE r.`actor_entity_id` = ?";
     return this.exec(sql, actorEntityId).then(result => {
       const things = [];
       result.forEach(data => {
@@ -498,7 +498,7 @@ class MySQL {
    */
   listInteractions(actorEntityId, entityId1, entityId2) {
     let sql =
-      "SELECT `id`, `entity_id_1`, `entity_id_2` \n" +
+      "SELECT `interactions`.`id` AS 'id', `entity_id_1`, `entity_id_2` \n" +
       "FROM `interactions` i\n" +
       "   JOIN `roles` er\n" +
       "       ON (i.`entity_id_1`=er.`subject_entity_id` " +
@@ -507,7 +507,7 @@ class MySQL {
       "   AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)\n";
     let data = [actorEntityId, entityId1, entityId1];
     if (entityId2 !== undefined) {
-      sql += + "    AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)\n";
+      sql += +"    AND (i.`entity_id_1` = ? OR i.`entity_id_2` = ?)\n";
       data.push(entityId2, entityId2);
     }
     sql += " GROUP BY `id`";
@@ -541,16 +541,19 @@ class MySQL {
    * @returns {Promise<Interaction>}
    */
   readInteractionByEntityId(entityId1, entityId2) {
-    const sql = "SELECT * FROM `interactions`\n"
-      + "WHERE (`entity_id_1` = ? AND `entity_id_2` = ?)\n"
-      + " OR (`entity_id_2` = ? AND `entity_id_1` = ?)";
-    return this.exec(sql, [entityId1, entityId2, entityId1, entityId2]).then(result => {
-      if (result.length === 1) {
-        return Promise.resolve(new Interaction(result[0]));
-      } else {
-        return Promise.reject({ code: 404, message: "Not Found" });
+    const sql =
+      "SELECT * FROM `interactions`\n" +
+      "WHERE (`entity_id_1` = ? AND `entity_id_2` = ?)\n" +
+      " OR (`entity_id_2` = ? AND `entity_id_1` = ?)";
+    return this.exec(sql, [entityId1, entityId2, entityId1, entityId2]).then(
+      result => {
+        if (result.length === 1) {
+          return Promise.resolve(new Interaction(result[0]));
+        } else {
+          return Promise.reject({ code: 404, message: "Not Found" });
+        }
       }
-    });
+    );
   }
 
   /**
@@ -615,9 +618,14 @@ class MySQL {
     }
     let table = "d" + property.dimensions.length;
     if (property.type === "TEXT") table = "dtext";
-    sql += " FROM `" + table + "` \n"
-        + " JOIN properties `p` \n"
-        + "ON p.`index_id` = `" + table + "`.`property_index_id`";
+    sql +=
+      " FROM `" +
+      table +
+      "` \n" +
+      " JOIN properties `p` \n" +
+      "ON p.`index_id` = `" +
+      table +
+      "`.`property_index_id`";
     sql += " WHERE `p`.id = ?";
     data.push(property.id);
     if (from !== undefined && to !== undefined) {
@@ -705,11 +713,11 @@ class MySQL {
    * @return {Promise<number>}
    */
   countPersons() {
-    const sql = "SELECT COUNT(`id`) AS 'num_persons' \n" +
-    "FROM `persons` p \n"
+    const sql =
+      "SELECT COUNT(`id`) AS 'num_persons' \n" + "FROM `persons` p \n";
     return this.exec(sql).then(result => {
-      console.log('countPersons',result)
-      return result[0].num_persons
+      console.log("countPersons", result);
+      return result[0].num_persons;
     });
   }
 
@@ -718,11 +726,10 @@ class MySQL {
    * @return {Promise<number>}
    */
   countThings() {
-    const sql = "SELECT COUNT(`id`) AS 'num_things' \n" +
-    "FROM `things` p \n"
+    const sql = "SELECT COUNT(`id`) AS 'num_things' \n" + "FROM `things` p \n";
     return this.exec(sql).then(result => {
-      console.log('countThings',result)
-      return result[0].num_things
+      console.log("countThings", result);
+      return result[0].num_things;
     });
   }
 
@@ -731,36 +738,33 @@ class MySQL {
    * @return {Promise<number>}
    */
   countProperties() {
-    const sql = "SELECT COUNT(`id`) AS 'num_properties' \n" +
-    "FROM `properties` p \n"
+    const sql =
+      "SELECT COUNT(`id`) AS 'num_properties' \n" + "FROM `properties` p \n";
     return this.exec(sql).then(result => {
-      console.log('countProperties',result)
-      return result[0].num_properties
+      console.log("countProperties", result);
+      return result[0].num_properties;
     });
   }
   /**
    * @return {Promise<Object>}
    */
-  getGlobalStats(){
-    return this.countPersons()
-    .then(num_persons => {
-      return this.countThings()
-      .then(num_things => {
-        return this.countProperties()
-        .then(num_properties => {
+  getGlobalStats() {
+    return this.countPersons().then(num_persons => {
+      return this.countThings().then(num_things => {
+        return this.countProperties().then(num_properties => {
           let json = {
-            persons : num_persons,
-            things : num_things,
-            properties : num_properties
-          }
-          var types = Object.keys(Property.types())
-          return this.getGlobalTypesStats(types,json).then(result =>{
+            persons: num_persons,
+            things: num_things,
+            properties: num_properties
+          };
+          var types = Object.keys(Property.types());
+          return this.getGlobalTypesStats(types, json).then(result => {
             //console.log('getGlobalTypesStats',result)
-            return Promise.resolve(result)
-          })
-        })
-      })
-    })
+            return Promise.resolve(result);
+          });
+        });
+      });
+    });
   }
 
   /**
@@ -768,30 +772,29 @@ class MySQL {
    * @param {String[]} types
    * @return {Promise<Object>}
    */
-  getGlobalTypesStats(types,json){
-    if(types.length == 0){
-      return Promise.resolve(json)
-    }else{
-      let propertyType = types[0]
-      if(Property.types()[propertyType] === undefined) {
-        return Promise.reject(propertyType + " doesn't exist")
-      }else{
-        return this.countEntitiesByType(propertyType)
-        .then(total_entities =>{
-        return this.countPropertiesByType(propertyType)
-        .then(total_properties =>{
-        return this.countValuesByType(propertyType)
-        .then(total_values => {
-          json[propertyType] = {
-            entities : total_entities,
-            properties : total_properties,
-            values : total_values
-          }
-          types.shift()
-          return this.getGlobalTypesStats(types,json)
-        })
-        })
-        })
+  getGlobalTypesStats(types, json) {
+    if (types.length == 0) {
+      return Promise.resolve(json);
+    } else {
+      let propertyType = types[0];
+      if (Property.types()[propertyType] === undefined) {
+        return Promise.reject(propertyType + " doesn't exist");
+      } else {
+        return this.countEntitiesByType(propertyType).then(total_entities => {
+          return this.countPropertiesByType(propertyType).then(
+            total_properties => {
+              return this.countValuesByType(propertyType).then(total_values => {
+                json[propertyType] = {
+                  entities: total_entities,
+                  properties: total_properties,
+                  values: total_values
+                };
+                types.shift();
+                return this.getGlobalTypesStats(types, json);
+              });
+            }
+          );
+        });
       }
     }
   }
@@ -801,17 +804,18 @@ class MySQL {
    * @return {Promise<number>}
    */
   countEntitiesByType(propertyType) {
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-    const sql = "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n" +
-    "FROM `properties` p \n" +
-    "WHERE p.`type` = ? "
-    return this.exec(sql, [propertyType]).then(result => {
-      //console.log('countEntityByType',propertyType,result)
-      return result[0].num_entities
-    });
-  }
+    if (Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist");
+    } else {
+      const sql =
+        "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n" +
+        "FROM `properties` p \n" +
+        "WHERE p.`type` = ? ";
+      return this.exec(sql, [propertyType]).then(result => {
+        //console.log('countEntityByType',propertyType,result)
+        return result[0].num_entities;
+      });
+    }
   }
 
   /**
@@ -819,17 +823,18 @@ class MySQL {
    * @return {Promise<number>}
    */
   countPropertiesByType(propertyType) {
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-    const sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n" +
-    "FROM `properties` p \n" +
-    "WHERE p.`type` = ? "
-    return this.exec(sql, [propertyType]).then(result => {
-      //console.log('countPropertiesByType',propertyType,result)
-      return result[0].num_properties
-    });
-  }
+    if (Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist");
+    } else {
+      const sql =
+        "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n" +
+        "FROM `properties` p \n" +
+        "WHERE p.`type` = ? ";
+      return this.exec(sql, [propertyType]).then(result => {
+        //console.log('countPropertiesByType',propertyType,result)
+        return result[0].num_properties;
+      });
+    }
   }
 
   /**
@@ -837,76 +842,40 @@ class MySQL {
    * @param {string} propertyType
    * @return {Promise<number>}
    */
-  countValuesByType(propertyType){
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-    const n = Property.types()[propertyType].dimensions.length
-    let sql = "SELECT COUNT(`timestamp`) AS 'num_values' \n";
-    sql += "FROM `d" + n + "` ";
-    sql +=
-      " JOIN properties `p` ON p.`index_id` = `d" +
-      n +
-      "`.`property_index_id`";
-    sql += " WHERE `p`.type = ?";
-    return this.exec(sql, [propertyType]).then(result => {
-      //console.log('countValuesByType',result)
-      return result[0].num_values
-    });
-  }
-  }
-
-  /**
-   * @param {string} propertyType
-   * @return {Promise<number>}
-   */
-  countEntitiesInRangeByType(propertyType,from,to) {
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-    const n = Property.types()[propertyType].dimensions.length
-    let sql = "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n"
-    let data = [];
-    sql +="FROM `properties` p"
-    sql +=" LEFT JOIN d"+ n +" d ON d.`property_index_id` = `p`.`index_id`"
-    sql += " WHERE p.`type` = ? "
-    data.push(propertyType);
-    if (from !== undefined && to !== undefined) {
-      sql += "AND d.`timestamp` BETWEEN ? AND ? ORDER BY d.`timestamp`";
-      data.push(from);
-      data.push(to);
-    } else if (from !== undefined) {
-      sql += "AND d.`timestamp` >= ? ORDER BY d.`timestamp`";
-      data.push(from);
-    } else if (to !== undefined) {
-      sql += "AND d.`timestamp` <= ? ORDER BY d.`timestamp`";
-      data.push(to);
+  countValuesByType(propertyType) {
+    if (Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist");
     } else {
-      sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
+      const n = Property.types()[propertyType].dimensions.length;
+      let sql = "SELECT COUNT(`timestamp`) AS 'num_values' \n";
+      sql += "FROM `d" + n + "` ";
+      sql +=
+        " JOIN properties `p` ON p.`index_id` = `d" +
+        n +
+        "`.`property_index_id`";
+      sql += " WHERE `p`.type = ?";
+      return this.exec(sql, [propertyType]).then(result => {
+        //console.log('countValuesByType',result)
+        return result[0].num_values;
+      });
     }
-    return this.exec(sql, data).then(result => {
-      //console.log('countEntityInRangeByType',propertyType,result)
-      return result[0].num_entities
-    });
-  }
   }
 
   /**
    * @param {string} propertyType
-   * @param {int} from
-   * @param {int} to
    * @return {Promise<number>}
    */
-  countPropertiesInRangeByType(propertyType,from,to){
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-      const n = Property.types()[propertyType].dimensions.length
-      let sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n"
+  countEntitiesInRangeByType(propertyType, from, to) {
+    if (Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist");
+    } else {
+      const n = Property.types()[propertyType].dimensions.length;
+      let sql = "SELECT COUNT( DISTINCT `entity_id`) AS 'num_entities' \n";
       let data = [];
-      sql +="FROM `properties` p"
-      sql +=" LEFT JOIN d"+ n +" d ON d.`property_index_id` = `p`.`index_id`"
-      sql += " WHERE p.`type` = ? "
+      sql += "FROM `properties` p";
+      sql +=
+        " LEFT JOIN d" + n + " d ON d.`property_index_id` = `p`.`index_id`";
+      sql += " WHERE p.`type` = ? ";
       data.push(propertyType);
       if (from !== undefined && to !== undefined) {
         sql += "AND d.`timestamp` BETWEEN ? AND ? ORDER BY d.`timestamp`";
@@ -923,7 +892,7 @@ class MySQL {
       }
       return this.exec(sql, data).then(result => {
         //console.log('countEntityInRangeByType',propertyType,result)
-        return result[0].num_properties
+        return result[0].num_entities;
       });
     }
   }
@@ -934,38 +903,76 @@ class MySQL {
    * @param {int} to
    * @return {Promise<number>}
    */
-  countValuesInRangeByType(propertyType,from,to){
-    if(Property.types()[propertyType] === undefined) {
-      return Promise.reject(propertyType + " doesn't exist")
-    }else{
-    const n = Property.types()[propertyType].dimensions.length
-    let sql = "SELECT COUNT(`timestamp`) AS 'num_values' \n";
-    let data = [];
-    sql += "FROM `d" + n + "` ";
-    sql +=
-      " JOIN properties `p` ON p.`index_id` = `d" +
-      n +
-      "`.`property_index_id`";
-    sql += " WHERE `p`.type = ?";
-    data.push(propertyType);
-    if (from !== undefined && to !== undefined) {
-      sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
-      data.push(from);
-      data.push(to);
-    } else if (from !== undefined) {
-      sql += "AND `timestamp` >= ? ORDER BY `timestamp`";
-      data.push(from);
-    } else if (to !== undefined) {
-      sql += "AND `timestamp` <= ? ORDER BY `timestamp`";
-      data.push(to);
+  countPropertiesInRangeByType(propertyType, from, to) {
+    if (Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist");
     } else {
-      sql += "ORDER BY `timestamp` DESC LIMIT 1";
+      const n = Property.types()[propertyType].dimensions.length;
+      let sql = "SELECT COUNT( DISTINCT `id`) AS 'num_properties' \n";
+      let data = [];
+      sql += "FROM `properties` p";
+      sql +=
+        " LEFT JOIN d" + n + " d ON d.`property_index_id` = `p`.`index_id`";
+      sql += " WHERE p.`type` = ? ";
+      data.push(propertyType);
+      if (from !== undefined && to !== undefined) {
+        sql += "AND d.`timestamp` BETWEEN ? AND ? ORDER BY d.`timestamp`";
+        data.push(from);
+        data.push(to);
+      } else if (from !== undefined) {
+        sql += "AND d.`timestamp` >= ? ORDER BY d.`timestamp`";
+        data.push(from);
+      } else if (to !== undefined) {
+        sql += "AND d.`timestamp` <= ? ORDER BY d.`timestamp`";
+        data.push(to);
+      } else {
+        sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
+      }
+      return this.exec(sql, data).then(result => {
+        //console.log('countEntityInRangeByType',propertyType,result)
+        return result[0].num_properties;
+      });
     }
-    return this.exec(sql, data).then(result => {
-      //console.log('countValuesByType',result)
-      return result[0].num_values
-    });
   }
+
+  /**
+   * @param {string} propertyType
+   * @param {int} from
+   * @param {int} to
+   * @return {Promise<number>}
+   */
+  countValuesInRangeByType(propertyType, from, to) {
+    if (Property.types()[propertyType] === undefined) {
+      return Promise.reject(propertyType + " doesn't exist");
+    } else {
+      const n = Property.types()[propertyType].dimensions.length;
+      let sql = "SELECT COUNT(`timestamp`) AS 'num_values' \n";
+      let data = [];
+      sql += "FROM `d" + n + "` ";
+      sql +=
+        " JOIN properties `p` ON p.`index_id` = `d" +
+        n +
+        "`.`property_index_id`";
+      sql += " WHERE `p`.type = ?";
+      data.push(propertyType);
+      if (from !== undefined && to !== undefined) {
+        sql += "AND `timestamp` BETWEEN ? AND ? ORDER BY `timestamp`";
+        data.push(from);
+        data.push(to);
+      } else if (from !== undefined) {
+        sql += "AND `timestamp` >= ? ORDER BY `timestamp`";
+        data.push(from);
+      } else if (to !== undefined) {
+        sql += "AND `timestamp` <= ? ORDER BY `timestamp`";
+        data.push(to);
+      } else {
+        sql += "ORDER BY `timestamp` DESC LIMIT 1";
+      }
+      return this.exec(sql, data).then(result => {
+        //console.log('countValuesByType',result)
+        return result[0].num_values;
+      });
+    }
   }
 
   /**
@@ -975,25 +982,24 @@ class MySQL {
    * @param {int} to
    * @return {Promise<Object>}
    */
-  getTypesStats(types,from,to){
-    let json =
-      {
-        types : [],
-        total_properties : 0,
-        total_entities : 0,
-        total_values : 0,
-        range : {
-            from : from,
-            to : to,
-            properties : 0,
-            entities : 0,
-            values : 0,
-              }
-        }
-    return this.fillTypesStatsJson(types,from,to,json).then(result =>{
+  getTypesStats(types, from, to) {
+    let json = {
+      types: [],
+      total_properties: 0,
+      total_entities: 0,
+      total_values: 0,
+      range: {
+        from: from,
+        to: to,
+        properties: 0,
+        entities: 0,
+        values: 0
+      }
+    };
+    return this.fillTypesStatsJson(types, from, to, json).then(result => {
       //console.log('fillTypesStatsJson',result)
-      return Promise.resolve(result)
-    })
+      return Promise.resolve(result);
+    });
   }
 
   /**
@@ -1004,47 +1010,51 @@ class MySQL {
    * @param {object} json
    * @return {Promise<Object>}
    */
-  fillTypesStatsJson(types,from,to,json){
-    if(types.length == 0){
-      return Promise.resolve(json)
-    }else{
-      let propertyType = types[0]
-      if(Property.types()[propertyType] === undefined) {
-        return Promise.reject(propertyType + " doesn't exist")
-      }else{
-        return this.countEntitiesByType(propertyType)
-        .then(total_entities =>{
-        return this.countPropertiesByType(propertyType)
-        .then(total_properties =>{
-        return this.countValuesByType(propertyType)
-        .then(total_values => {
-        return this.countEntitiesInRangeByType(propertyType,from,to)
-        .then(num_entities => {
-        return this.countPropertiesInRangeByType(propertyType,from,to)
-        .then(num_properties => {
-        return this.countValuesInRangeByType(propertyType,from,to)
-        .then(num_values =>{
-
-          json.total_entities += total_entities
-          json.total_properties += total_properties
-          json.total_values += total_values
-          json.range.entities+= num_entities
-          json.range.properties += num_properties
-          json.range.values += num_values
-          json.types.push(types.shift())
-          return this.fillTypesStatsJson(types,from,to,json)
-
-      })
-      })
-      })
-      })
-      })
-      })
+  fillTypesStatsJson(types, from, to, json) {
+    if (types.length == 0) {
+      return Promise.resolve(json);
+    } else {
+      let propertyType = types[0];
+      if (Property.types()[propertyType] === undefined) {
+        return Promise.reject(propertyType + " doesn't exist");
+      } else {
+        return this.countEntitiesByType(propertyType).then(total_entities => {
+          return this.countPropertiesByType(propertyType).then(
+            total_properties => {
+              return this.countValuesByType(propertyType).then(total_values => {
+                return this.countEntitiesInRangeByType(
+                  propertyType,
+                  from,
+                  to
+                ).then(num_entities => {
+                  return this.countPropertiesInRangeByType(
+                    propertyType,
+                    from,
+                    to
+                  ).then(num_properties => {
+                    return this.countValuesInRangeByType(
+                      propertyType,
+                      from,
+                      to
+                    ).then(num_values => {
+                      json.total_entities += total_entities;
+                      json.total_properties += total_properties;
+                      json.total_values += total_values;
+                      json.range.entities += num_entities;
+                      json.range.properties += num_properties;
+                      json.range.values += num_values;
+                      json.types.push(types.shift());
+                      return this.fillTypesStatsJson(types, from, to, json);
+                    });
+                  });
+                });
+              });
+            }
+          );
+        });
       }
     }
   }
-
-
 }
 
 module.exports = MySQL;
