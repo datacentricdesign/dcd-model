@@ -1,6 +1,7 @@
 "use strict";
 
 const idGen = require("../lib/id");
+const DCDError = require("../lib/Error");
 
 class Thing {
   /**
@@ -41,7 +42,7 @@ class Thing {
         return property;
       }
     }
-    throw new Error("Property not found");
+    throw new DCDError(404, "Property with name " + name + " not found");
   }
 }
 

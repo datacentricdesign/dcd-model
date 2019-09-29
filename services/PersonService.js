@@ -20,7 +20,7 @@ class PersonService {
   /**
    * Create a new Person
    * @param {Person} person
-   * @return {Promise<Person|Error>}
+   * @return {Promise<Person|DCDError>}
    **/
   create(person) {
     if (person.id === undefined) {

@@ -1,12 +1,13 @@
 "use strict";
 
+const DCDError = require("../lib/Error");
+
 const cryptoAlgo = process.env.CRYPTO_ALGO || "sha256";
 const cryptoKey = process.env.CRYPTO_KEY;
-if (cryptoKey === undefined) throw Error("Missing CRYPTO_KEY env.");
+if (cryptoKey === undefined) throw DCDError(500, "Missing CRYPTO_KEY env.");
 
 const crypto = require("crypto");
 const idGen = require("../lib/id");
-const DCDError = require("../lib/Error");
 
 /**
  * A Person represents a physical person, signed up on the hub.

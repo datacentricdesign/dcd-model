@@ -13,6 +13,8 @@ const Property = require("../entities/Property");
 const Dimension = require("../entities/Dimension");
 const Class = require("../entities/Class");
 
+const DCDError = require("../lib/Error");
+
 class MySQL {
   /**
    *
@@ -60,14 +62,12 @@ class MySQL {
           return reject(new error("MySQL connection undefined."));
         }
         const q = connection.query(sql, data, (error, result) => {
-          logger.debug(q.sql);
           connection.release();
           if (error !== null) {
             if (error.code === "ER_DUP_ENTRY") {
-              return reject({ error: 400, message: "Already exists" });
+              return reject(new DCDError(4006, "Already exists"));
             } else {
-              logger.error(error + "\n" + q.sql);
-              return reject({ error: 500, message: "Server Error" });
+              return reject(new DCDError(500, q.sql));
             }
           } else {
             return resolve(result);
