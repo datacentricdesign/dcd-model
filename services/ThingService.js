@@ -5,7 +5,6 @@ const log4js = require("log4js");
 const logger = log4js.getLogger("[dcd:things]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
-const policies = require("../lib/policies");
 const idGen = require("../lib/id");
 
 class ThingService {
@@ -50,14 +49,12 @@ class ThingService {
               return this.toKafka(thing);
             })
             .then(() => {
-              return this.model.dao.createRole(thing.id, actorId, "owner");
+              // Give owner role to the current user on the new Thing
+              return this.model.policies.grant(actorId, thing.id, "owner");
             })
             .then(() => {
-              logger.debug("create: Sent to kafka");
-              return createAccessPolicy(thing.id);
-            })
-            .then(() => {
-              return createOwnerAccessPolicy(thing.id, actorId);
+              // Give subject role to the new Thing
+              return this.model.policies.grant(thing.id, thing.id, "subject");
             })
             .then(() => {
               if (jwt) {
@@ -114,62 +111,6 @@ class ThingService {
   }
 
   /**
-   * Grant a role on a Thing to an Entity
-   * @param {string} actorType (persons or things)
-   * @param {string} actorId
-   * @param {string} thingId
-   * @param {string} role
-   * returns Promise
-   **/
-  grant(actorType, actorId, thingId, role) {
-    return this.model.dao.createRole(thingId, actorId, role).then(() => {
-      const actor = "dcd:" + actorType + ":" + actorId;
-      const subject = "dcd:things:" + thingId;
-      const acp = {
-        id: actor + "-" + subject + "-" + role + "-policy",
-        effect: "allow",
-        actions: policies.roleToActions(role),
-        subjects: [actor],
-        resources: [
-          subject,
-          subject + ":properties",
-          subject + ":properties:<.*>"
-        ]
-      };
-      logger.debug("ACP: " + JSON.stringify(acp));
-      return policies.create(acp);
-    });
-  }
-
-  /**
-   * R a role on a Thing to an Entity
-   * @param {string} actorType (persons or things)
-   * @param {string} actorId
-   * @param {string} thingId
-   * @param {string} role
-   * returns Promise
-   **/
-  revoke(actorType, actorId, thingId, role) {
-    return this.model.dao.deleteRole(thingId, actorId, role).then(() => {
-      const actor = "dcd:" + actorType + ":" + actorId;
-      const subject = "dcd:things:" + thingId;
-      const acp = {
-        id: actor + "-" + subject + "-" + role + "-policy",
-        effect: "deny",
-        actions: policies.roleToActions(role),
-        subjects: [actor],
-        resources: [
-          subject,
-          subject + ":properties",
-          subject + ":properties:<.*>"
-        ]
-      };
-      logger.debug("ACP: " + JSON.stringify(acp));
-      return policies.create(acp);
-    });
-  }
-
-  /**
    * Update a Thing
    * @param thingId
    * returns Promise
@@ -213,50 +154,6 @@ class ThingService {
 }
 
 module.exports = ThingService;
-
-/**
- * Generate an access policy for a thing.
- * @param thingId
- * @returns {Promise<>}
- */
-function createAccessPolicy(thingId) {
-  const thingPolicy = {
-    id: thingId + "-" + thingId + "-cru-policy",
-    effect: "allow",
-    actions: policies.roleToActions("subject"),
-    subjects: ["dcd:things:" + thingId],
-    resources: [
-      "dcd:things:" + thingId,
-      "dcd:things:" + thingId + ":properties",
-      "dcd:things:" + thingId + ":properties:<.*>"
-    ]
-  };
-  logger.debug("Thing policy: " + JSON.stringify(thingPolicy));
-  return policies.create(thingPolicy);
-}
-
-/**
- * Generate an access policy for the owner of a thing.
- * @param thingId
- * @param subject
- * @returns {Promise<>}
- */
-function createOwnerAccessPolicy(thingId, subject) {
-  const thingOwnerPolicy = {
-    id: thingId + "-" + subject + "-clrud-policy",
-    effect: "allow",
-    actions: policies.roleToActions("owner"),
-    subjects: [subject],
-    resources: [
-      "dcd:things:" + thingId,
-      "dcd:things:" + thingId + ":properties",
-      "dcd:things:" + thingId + ":properties:<.*>",
-      "dcd:things:" + thingId + ":interactions:",
-      "dcd:things:" + thingId + ":interactions:<.*>"
-    ]
-  };
-  return policies.create(thingOwnerPolicy);
-}
 
 const removePrefixThing = thing => {
   thing.id = thing.id.replace("things:", "");

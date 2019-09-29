@@ -6,7 +6,7 @@ const logger = log4js.getLogger("[dcd:persons]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
 const Person = require("../entities/Person");
-const policies = require("../lib/policies");
+const DCDError = require("../lib/Error");
 
 class PersonService {
   /**
@@ -23,38 +23,57 @@ class PersonService {
    * @return {Promise<Person|Error>}
    **/
   create(person) {
+    if (person.id === undefined) {
+      return Promise.reject(new DCDError(4001, "Add field id."));
+    }
+    if (person.name === undefined) {
+      return Promise.reject(new DCDError(4001, "Add field name."));
+    }
+    if (person.password === undefined) {
+      return Promise.reject(new DCDError(4001, "Add field password."));
+    }
+    if (!person.id.startsWith("dcd:persons:")) {
+      person.id = "dcd:persons:" + person.id;
+    }
     return (
       this.model.dao
         .readPerson(person.id)
-
         // Read positive, the Person already exist
         .then(retrievedPerson => {
-          return Promise.reject({
-            code: 400,
-            message: "Person " + retrievedPerson.id + " already exist."
-          });
+          return Promise.reject(
+            new DCDError(
+              4002,
+              "Provide a different id from " + retrievedPerson.id + "."
+            )
+          );
         })
-
         // Read negative, the Thing does not exist yet
         .catch(error => {
           if (error.code === 404) {
             return this.model.dao
               .createPerson(person)
               .then(() => {
+                return this.model.dao.createRole(person.id, person.id, "owner");
+              })
+              .then(() => {
                 // Publish the person to kafka
                 return this.toKafka(person);
               })
               .then(() => {
-                return this.model.dao.createRole(person.id, person.id, "owner");
+                // Give user role to the new Person on the DCD Hub
+                return this.model.policies.createPolicy(
+                  person.id,
+                  "dcd",
+                  "user"
+                );
               })
               .then(() => {
-                return createDCDAccessPolicy(person.id);
-              })
-              .then(() => {
-                return createResourcePolicy(person.id);
-              })
-              .then(() => {
-                return createPersonCRUDPolicy(person.id);
+                // Give owner role to the new Person on the new Person
+                return this.model.policies.createPolicy(
+                  person.id,
+                  person.id,
+                  "owner"
+                );
               })
               .then(() => {
                 logger.debug(person.id);
@@ -119,55 +138,3 @@ class PersonService {
 }
 
 module.exports = PersonService;
-
-/**
- *
- * @param personId
- * @returns {*}
- */
-function createDCDAccessPolicy(personId) {
-  return policies.create({
-    id: personId + "-" + personId + "-r-policy",
-    effect: "allow",
-    actions: ["dcd:actions:read"],
-    subjects: ["dcd:persons:" + personId],
-    resources: ["dcd"]
-  });
-}
-
-/**
- * @param {String} personId
- * @returns Promise<>
- */
-function createResourcePolicy(personId) {
-  return policies.create({
-    id: personId + "-" + personId + "-cl-policy",
-    effect: "allow",
-    actions: ["dcd:actions:create", "dcd:actions:list"],
-    subjects: ["dcd:persons:" + personId],
-    resources: ["dcd:things", "dcd:persons"]
-  });
-}
-
-/**
- * @param {String} personId
- * @returns Promise<>
- */
-function createPersonCRUDPolicy(personId) {
-  return policies.create({
-    id: personId + "-" + personId + "-crud-policy",
-    effect: "allow",
-    actions: [
-      "dcd:actions:create",
-      "dcd:actions:read",
-      "dcd:actions:update",
-      "dcd:actions:delete"
-    ],
-    subjects: ["dcd:persons:" + personId],
-    resources: [
-      "dcd:persons:" + personId,
-      "dcd:persons:" + personId + ":properties",
-      "dcd:persons:" + personId + ":properties:<.*>"
-    ]
-  });
-}

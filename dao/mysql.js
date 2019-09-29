@@ -675,21 +675,28 @@ class MySQL {
     });
   }
 
-  createRole(subjectId, actorId, role) {
-    const sql = "INSERT INTO `entities_roles` SET ?";
+  createRole(actorId, subjectId, roleName) {
+    const sql = "INSERT IGNORE INTO `entities_roles` SET ?";
     const insert = {
-      subject_entity_id: subjectId,
       actor_entity_id: actorId,
-      role: role
+      subject_entity_id: subjectId,
+      role: roleName
     };
     return this.exec(sql, [insert]);
   }
 
-  deleteRole(subjectId, actorId, role) {
+  deleteRole(actorId, subjectId, roleName) {
     const sql =
       "DELETE FROM `entities_roles` \n" +
-      "WHERE `subject_entity_id` = ? AND `actor_entity_id` = ? AND `role` = ?";
-    return this.exec(sql, [subjectId, actorId, role]);
+      "WHERE `actor_entity_id` = ? AND `subject_entity_id` = ? AND `role` = ?";
+    return this.exec(sql, [actorId, subjectId, roleName]);
+  }
+
+  readRoleId(actorId, subjectId, roleName) {
+    const sql =
+      "SELECT `id`  FROM `entities_roles` \n" +
+      "WHERE `actor_entity_id` = ? AND `subject_entity_id` = ? AND `role` = ?";
+    return this.exec(sql, [actorId, subjectId, roleName]);
   }
 
   /**

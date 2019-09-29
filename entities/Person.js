@@ -6,12 +6,21 @@ if (cryptoKey === undefined) throw Error("Missing CRYPTO_KEY env.");
 
 const crypto = require("crypto");
 const idGen = require("../lib/id");
+const DCDError = require("../lib/Error");
 
+/**
+ * A Person represents a physical person, signed up on the hub.
+ * It can own, share and have access to Things.
+ */
 class Person {
   /**
    * @constructor
+   * @param {string|object} name The property as JSON object or the person name
+   * @param {string} password The person password
+   * @param {Array<Property>} properties
+   * @param {string} id A unique identifier, automatically generated if missing.
    */
-  constructor(name, password = undefined, properties = [], id) {
+  constructor(name, password = undefined, properties = [], id = undefined) {
     if (typeof name === "object") {
       const person = name;
 
@@ -70,10 +79,16 @@ module.exports = Person;
  * @param {String} password
  */
 function validNameAndPassword(name, password) {
-  if (typeof name !== "string" || typeof password !== "string") {
-    throw new Error("Name is undefined.");
+  if (typeof name !== "string") {
+    throw new DCDError(4001, "The field 'name' is not a string.");
+  }
+  if (typeof password !== "string") {
+    throw new DCDError(4001, "The field 'password' must be a string.");
   }
   if (password.length < 8) {
-    throw new Error("Password is too short (Minimum 8 characters).");
+    throw new DCDError(
+      4001,
+      "Password is too short. Provide a password with 8 characters or more."
+    );
   }
 }

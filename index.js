@@ -2,13 +2,13 @@ const ThingService = require("./services/ThingService");
 const InteractionService = require("./services/InteractionService");
 const PersonService = require("./services/PersonService");
 const PropertyService = require("./services/PropertyService");
-const StatsService = require("./services/StatsService")
+const StatsService = require("./services/StatsService");
 const MySQL = require("./dao/mysql");
 
 const Kafka = require("./dao/kafka");
 
-let authEnabled = process.env.AUTH_ENABLED === undefined
-                    || process.env.AUTH_ENABLED === "true";
+let authEnabled =
+  process.env.AUTH_ENABLED === undefined || process.env.AUTH_ENABLED === "true";
 if (authEnabled === undefined) authEnabled = true;
 
 class DCDModel {
@@ -21,9 +21,11 @@ class DCDModel {
 
     if (authEnabled) {
       const Auth = require("./lib/Auth");
-      this.auth = new Auth();
+      this.auth = new Auth(this);
     }
 
+    const Policies = require("./lib/Policies");
+    this.policies = new Policies(this);
   }
 
   init() {
@@ -47,7 +49,7 @@ class DCDModel {
     this.interactions = new InteractionService(this);
     this.persons = new PersonService(this);
     this.properties = new PropertyService(this);
-    this.stats = new StatsService(this)
+    this.stats = new StatsService(this);
   }
 }
 
