@@ -32,6 +32,10 @@ class Person {
         this.id = person.id;
       }
 
+      if (!this.id.startsWith("dcd:persons:")) {
+        this.id = "dcd:persons:" + person.id;
+      }
+
       if (person.name !== undefined) {
         this.name = person.name;
       }

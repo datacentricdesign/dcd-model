@@ -32,9 +32,6 @@ class PersonService {
     if (person.password === undefined) {
       return Promise.reject(new DCDError(4001, "Add field password."));
     }
-    if (!person.id.startsWith("dcd:persons:")) {
-      person.id = "dcd:persons:" + person.id;
-    }
     return (
       this.model.dao
         .readPerson(person.id)
