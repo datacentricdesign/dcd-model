@@ -112,8 +112,12 @@ class PersonService {
    * @returns {*}
    */
   check(personId, password) {
+    let id = personId
+    if (!id.startsWith("dcd:persons:")) {
+      id = "dcd:persons:" + id;
+    }
     return this.model.dao.checkCredentials(
-      personId,
+      id,
       Person.encryptPassword(password)
     );
   }
