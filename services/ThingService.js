@@ -6,6 +6,7 @@ const logger = log4js.getLogger("[dcd:things]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
 const idGen = require("../lib/id");
+const DCDError = require("../lib/Error");
 
 class ThingService {
   /**
@@ -25,6 +26,15 @@ class ThingService {
    * returns Thing
    **/
   create(actorId, thing, jwt) {
+    if (thing.id === undefined) {
+      return Promise.reject(new DCDError(4003, "Add field id."));
+    }
+    if (thing.name === undefined || thing.name === "") {
+      return Promise.reject(new DCDError(4003, "Add field name."));
+    }
+    if (thing.type === undefined || thing.type === "") {
+      return Promise.reject(new DCDError(4003, "Add field type."));
+    }
     return this.model.things
       .read(thing.id)
       .then(retrievedThing => {
