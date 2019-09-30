@@ -16,8 +16,8 @@ const idGen = require("../lib/id");
 class Person {
   /**
    * @constructor
-   * @param {string|object} name The property as JSON object or the person name
-   * @param {string} password The person password
+   * @param {string|object} name The Person as JSON object or the person name
+   * @param {string} password The Person password
    * @param {Array<Property>} properties
    * @param {string} id A unique identifier, automatically generated if missing.
    */
@@ -31,11 +31,6 @@ class Person {
       } else {
         this.id = person.id;
       }
-
-      if (!this.id.startsWith("dcd:persons:")) {
-        this.id = "dcd:persons:" + person.id;
-      }
-
       if (person.name !== undefined) {
         this.name = person.name;
       }
@@ -60,6 +55,10 @@ class Person {
       }
 
       this.properties = properties;
+    }
+
+    if (!this.id.startsWith("dcd:persons:")) {
+      this.id = "dcd:persons:" + this.id;
     }
 
     this.readAt = Date.now();

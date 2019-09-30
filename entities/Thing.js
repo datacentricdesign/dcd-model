@@ -3,14 +3,19 @@
 const idGen = require("../lib/id");
 const DCDError = require("../lib/Error");
 
+/**
+ * A Thing represents a physical or virtual component collecting data.
+ * For example, a phone which collects acceleration, a website recording
+ * number of page views.
+ */
 class Thing {
   /**
-   *
-   * @param {String|object} name
-   * @param description
-   * @param type
-   * @param properties
-   * @param id
+   * @constructor
+   * @param {string|object} name The Thing as JSON object or the Thing name
+   * @param {string} description The Thing description
+   * @param {string} type The Thing Type
+   * @param {Array<Property>} properties
+   * @param {string} id A unique identifier, automatically generated if missing.
    */
   constructor(name = "", description = "", type = "", properties = [], id) {
     if (typeof name === "object") {
@@ -31,6 +36,11 @@ class Thing {
       this.type = type;
       this.properties = properties;
     }
+
+    if (!this.id.startsWith("dcd:things:")) {
+      this.id = "dcd:things:" + this.id;
+    }
+
     this.readAt = Date.now();
     this.keys = {};
   }

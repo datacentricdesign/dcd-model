@@ -59,7 +59,7 @@ class MySQL {
         if (error) {
           return reject(error);
         } else if (connection === undefined) {
-          return reject(new error("MySQL connection undefined."));
+          return reject(new DCDError(500, "MySQL connection undefined."));
         }
         const q = connection.query(sql, data, (error, result) => {
           connection.release();
@@ -138,7 +138,14 @@ class MySQL {
         "GROUP BY p.`index_id`";
       return this.exec(sqlId, [property.id]).then(result => {
         if (result.length !== 1) {
-          return Promise.reject("Not Found");
+          return Promise.reject(
+            new DCDError(
+              404,
+              "The property to be updated (" +
+                property.id +
+                ") could not be found"
+            )
+          );
         }
         this.propertyIndexMap[property.id] = {
           index: result[0].index_id,
@@ -438,7 +445,12 @@ class MySQL {
       if (result.length === 1) {
         return Promise.resolve(new Person(result[0]));
       } else {
-        return Promise.reject({ code: 404, message: "Not Found" });
+        return Promise.reject(
+          new DCDError(
+            404,
+            "The Person with id " + personId + " could not be found."
+          )
+        );
       }
     });
   }
@@ -471,7 +483,12 @@ class MySQL {
       if (result.length === 1) {
         return Promise.resolve(new Thing(result[0]));
       } else {
-        return Promise.reject({ code: 404, message: "Not Found" });
+        return Promise.reject(
+          new DCDError(
+            404,
+            "The Thing with id " + thingId + " could not be found"
+          )
+        );
       }
     });
   }
@@ -530,7 +547,12 @@ class MySQL {
       if (result.length === 1) {
         return Promise.resolve(new Interaction(result[0]));
       } else {
-        return Promise.reject({ code: 404, message: "Not Found" });
+        return Promise.reject(
+          new DCDError(
+            404,
+            "The Interaction with id " + interactionId + " could not be found."
+          )
+        );
       }
     });
   }
@@ -550,7 +572,16 @@ class MySQL {
         if (result.length === 1) {
           return Promise.resolve(new Interaction(result[0]));
         } else {
-          return Promise.reject({ code: 404, message: "Not Found" });
+          return Promise.reject(
+            new DCDError(
+              404,
+              "No interaction could be found between " +
+                entityId1 +
+                " and " +
+                entityId2 +
+                "."
+            )
+          );
         }
       }
     );
@@ -599,7 +630,16 @@ class MySQL {
         property.registeredAt = data.registered_at.getTime();
         return Promise.resolve(property);
       } else {
-        return Promise.reject({ code: 404, message: "Not Found" });
+        return Promise.reject(
+          new DCDError(
+            404,
+            "The Property with id " +
+              propertyId +
+              " (entity id " +
+              entityId +
+              ") could not be found."
+          )
+        );
       }
     });
   }
@@ -674,7 +714,14 @@ class MySQL {
       "WHERE p.`id` = ? ";
     return this.exec(sqlId, [propertyId]).then(result => {
       if (result.length !== 1) {
-        return Promise.reject("Not Found");
+        return Promise.reject(
+          new DCDError(
+            404,
+            "Could not find Dimension count and property index for property id " +
+              propertyId +
+              "."
+          )
+        );
       }
       this.propertyIndexMap[propertyId] = {
         index: result[0].index_id,

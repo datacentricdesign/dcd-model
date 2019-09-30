@@ -50,9 +50,6 @@ class PersonService {
             return this.model.dao
               .createPerson(person)
               .then(() => {
-                return this.model.dao.createRole(person.id, person.id, "owner");
-              })
-              .then(() => {
                 // Publish the person to kafka
                 return this.toKafka(person);
               })
@@ -112,7 +109,7 @@ class PersonService {
    * @returns {*}
    */
   check(personId, password) {
-    let id = personId
+    let id = personId;
     if (!id.startsWith("dcd:persons:")) {
       id = "dcd:persons:" + id;
     }

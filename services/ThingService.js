@@ -50,14 +50,17 @@ class ThingService {
             })
             .then(() => {
               // Give owner role to the current user on the new Thing
+              logger.debug("new thing owner");
               return this.model.policies.grant(actorId, thing.id, "owner");
             })
             .then(() => {
               // Give subject role to the new Thing
+              logger.debug("new thing subject");
               return this.model.policies.grant(thing.id, thing.id, "subject");
             })
             .then(() => {
               if (jwt) {
+                logger.debug("new thing jwt");
                 return this.generateKeys(thing.id);
               }
               return Promise.resolve();
@@ -69,6 +72,7 @@ class ThingService {
                   keys.jwt = this.model.auth.generateJWT(keys.privateKey);
                 }
               }
+              logger.debug("new thing done");
               return Promise.resolve(thing);
             })
             .catch(error => {

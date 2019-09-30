@@ -5,12 +5,12 @@ const idGen = require("../lib/id");
 class Property {
   /**
    *
-   * @param {String|Object} name
-   * @param {String} description
-   * @param {String} type
+   * @param {string|Object} name
+   * @param {string} description
+   * @param {string} type
    * @param {Dimension[]} dimensions
    * @param {Classes[]} classes
-   * @param {String} id
+   * @param {string} id
    */
   constructor(
     name = "",
@@ -37,8 +37,7 @@ class Property {
         this.name = "";
       }
 
-      this.id =
-        property.id !== undefined ? property.id : idGen.toID(this.name);
+      this.id = property.id !== undefined ? property.id : idGen.toID(this.name);
 
       if (property.description !== undefined) {
         this.description = property.description;
