@@ -423,6 +423,33 @@ const Types = {
       }
     ]
   },
+  AUDIO: {
+    name: "Audio",
+    description: "",
+    dimensions: [
+      {
+        name: "Duration",
+        description: "Duration of the audio record.",
+        unit: "ms"
+      }
+    ]
+  },
+  PICTURE: {
+    name: "Picture",
+    description: "",
+    dimensions: [
+      {
+        name: "x",
+        description: "Horizontal resolution",
+        unit: "px"
+      },
+      {
+        name: "y",
+        description: "Vertical resolution",
+        unit: "px"
+      }
+    ]
+  },
   HEART_RATE: {
     name: "Heart Rate",
     description: "Heart Rate Measurement (HRM)",

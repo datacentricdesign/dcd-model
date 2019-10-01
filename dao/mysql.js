@@ -173,7 +173,7 @@ class MySQL {
     let countIgnoredValues = 0;
     for (let i = 0; i < values.length; i++) {
       let row = [dimensions.index];
-      countAddedTimestamp++;
+      count++;
       if (values[i].length === dimensions.num_dimensions) {
         // Missing timestamp, adding time
         values[i].unshift(+new Date());
