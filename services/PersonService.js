@@ -55,19 +55,13 @@ class PersonService {
               })
               .then(() => {
                 // Give user role to the new Person on the DCD Hub
-                return this.model.policies.createPolicy(
-                  person.id,
-                  "dcd",
-                  "user"
-                );
+                logger.debug("new thing owner");
+                return this.model.policies.grant(person.id, "dcd", "user");
               })
               .then(() => {
                 // Give owner role to the new Person on the new Person
-                return this.model.policies.createPolicy(
-                  person.id,
-                  person.id,
-                  "owner"
-                );
+                logger.debug("new thing owner");
+                return this.model.policies.grant(person.id, person.id, "owner");
               })
               .then(() => {
                 logger.debug(person.id);
