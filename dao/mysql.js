@@ -119,15 +119,17 @@ class MySQL {
    * @return {Promise}
    */
   updatePropertyValues(property) {
-    logger.debug(property.values);
-    if (property.values.length === 0) {
+    if (property.values === undefined || property.values.length === 0) {
+      // there is no value to update
       return Promise.resolve();
     }
     const values = property.values;
     let dimensions = null;
     if (this.propertyIndexMap.hasOwnProperty(property.id)) {
+      // pick dimension number from the cache
       dimensions = this.propertyIndexMap[property.id];
     } else {
+      // no dimension number yet, let's retrieve that from the database
       const sqlId =
         "SELECT p.`index_id`, p.`type`," +
         " COUNT(*) AS 'num_dimensions' \n" +
@@ -147,11 +149,13 @@ class MySQL {
             )
           );
         }
+        // Store the number of dimension in the cache
         this.propertyIndexMap[property.id] = {
           index: result[0].index_id,
           type: result[0].type,
           num_dimensions: result[0].num_dimensions
         };
+        // Now that we have the dimension nb, rerun the function.
         return this.updatePropertyValues(property);
       });
     }
@@ -164,15 +168,33 @@ class MySQL {
     }
     sql += ") VALUES ?";
     let data = [];
+    let countAddedTimestamp = 0;
+    let countIgnoredValues = 0;
     for (let i = 0; i < values.length; i++) {
       let row = [dimensions.index];
-      if (values[i].length !== dimensions.num_dimensions + 1) {
+      if (values[i].length === dimensions.num_dimensions) {
+        // Missing timestamp, adding time
+        values[i].unshift(+new Date());
+        countAddedTimestamp++;
+      } else if (
+        values[i].length < dimensions.num_dimensions ||
+        values[i].length > dimensions.num_dimensions + 1
+      ) {
+        // Wrong number of dimension
+        countIgnoredValues++;
         continue;
       }
       data.push(row.concat(values[i]));
     }
     return this.exec(sql, [data]).then(() => {
-      return Promise.resolve();
+      if (countAddedTimestamp !== 0 || countIgnoredValues !== 0)
+        return Promise.resolve({
+          warning:
+            countIgnoredValues +
+            " were ignored and " +
+            countAddedTimestamp +
+            " were added with the current timestamp from the server."
+        });
     });
   }
 

@@ -83,6 +83,7 @@ class PropertyService {
     if (property.values === undefined || property.values.length === 0) {
       return Promise.resolve();
     }
+
     return this.model.dao
       .updatePropertyValues(property)
       .then(() => {
