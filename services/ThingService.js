@@ -117,7 +117,7 @@ class ThingService {
       })
       .then(results => {
         thing.properties = results;
-        return Promise.resolve(removePrefixThing(thing));
+        return Promise.resolve(thing);
       })
       .catch(error => {
         return Promise.reject(error);
@@ -178,8 +178,3 @@ class ThingService {
 }
 
 module.exports = ThingService;
-
-const removePrefixThing = thing => {
-  thing.id = thing.id.replace("things:", "");
-  return thing;
-};
