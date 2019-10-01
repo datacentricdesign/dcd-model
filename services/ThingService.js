@@ -139,7 +139,17 @@ class ThingService {
    * @return {Promise}
    */
   del(thingId) {
-    return this.model.dao.deleteThing(thingId);
+    return this.model.dao.deleteThing(thingId).then(result => {
+      if (result.affectedRows > 0) {
+        return Promise.resolve(result.affectedRows);
+      }
+      return Promise.reject(
+        new DCDError(
+          404,
+          "Thing to delete " + thingId + " could not be not found."
+        )
+      );
+    });
   }
 
   /**

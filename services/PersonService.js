@@ -123,7 +123,17 @@ class PersonService {
    * @param {String} personId
    */
   del(personId) {
-    return this.model.dao.deletePerson(personId);
+    return this.model.dao.deletePerson(personId).then(result => {
+      if (result.affectedRows > 0) {
+        return Promise.resolve(result.affectedRows);
+      }
+      return Promise.reject(
+        new DCDError(
+          404,
+          "Person to delete " + personId + " could not be not found."
+        )
+      );
+    });
   }
 
   /**
