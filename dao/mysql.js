@@ -233,15 +233,21 @@ class MySQL {
    * @return {Promise}
    */
   updateProperty(property) {
-    const sql = "UPDATE `properties` SET ? \n" + " WHERE `id` = ? ";
     const update = {};
+    let toUpdate = false;
     if (property.name !== undefined && property.name !== "") {
       update.name = property.name;
+      toUpdate = true;
     }
     if (property.description !== undefined && property.description !== "") {
       update.description = property.description;
+      toUpdate = true;
     }
-    return this.exec(sql, [update, property.id]);
+    if (toUpdate) {
+      const sql = "UPDATE `properties` SET ? \n" + " WHERE `id` = ? ";
+      return this.exec(sql, [update, property.id]);
+    }
+    return Promise.resolve();
   }
 
   /**
