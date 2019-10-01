@@ -187,7 +187,7 @@ class MySQL {
       data.push(row.concat(values[i]));
     }
     return this.exec(sql, [data]).then(() => {
-      if (countAddedTimestamp !== 0 || countIgnoredValues !== 0)
+      if (countAddedTimestamp !== 0 || countIgnoredValues !== 0) {
         return Promise.resolve({
           warning:
             countIgnoredValues +
@@ -195,6 +195,8 @@ class MySQL {
             countAddedTimestamp +
             " were added with the current timestamp from the server."
         });
+      }
+      return Promise.resolve();
     });
   }
 
@@ -233,10 +235,10 @@ class MySQL {
   updateProperty(property) {
     const sql = "UPDATE `properties` SET ? \n" + " WHERE `id` = ? ";
     const update = {};
-    if (property.name !== undefined) {
+    if (property.name !== undefined && property.name !== "") {
       update.name = property.name;
     }
-    if (property.description !== undefined) {
+    if (property.description !== undefined && property.description !== "") {
       update.description = property.description;
     }
     return this.exec(sql, [update, property.id]);
