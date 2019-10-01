@@ -89,10 +89,10 @@ class PropertyService {
 
     return this.model.dao
       .updatePropertyValues(property)
-      .then(warning => {
+      .then(report => {
         // Publish the property values to kafka
         return this.valuesToKafka(property.values, property.id).then(() => {
-          return Promise.resolve(warning);
+          return Promise.resolve(report);
         });
       })
       .catch(error => {

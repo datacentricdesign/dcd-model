@@ -168,10 +168,12 @@ class MySQL {
     }
     sql += ") VALUES ?";
     let data = [];
+    let count = 0;
     let countAddedTimestamp = 0;
     let countIgnoredValues = 0;
     for (let i = 0; i < values.length; i++) {
       let row = [dimensions.index];
+      countAddedTimestamp++;
       if (values[i].length === dimensions.num_dimensions) {
         // Missing timestamp, adding time
         values[i].unshift(+new Date());
@@ -186,17 +188,14 @@ class MySQL {
       }
       data.push(row.concat(values[i]));
     }
-    return this.exec(sql, [data]).then(() => {
-      if (countAddedTimestamp !== 0 || countIgnoredValues !== 0) {
-        return Promise.resolve({
-          warning:
-            countIgnoredValues +
-            " were ignored and " +
-            countAddedTimestamp +
-            " were added with the current timestamp from the server."
-        });
-      }
-      return Promise.resolve();
+    return this.exec(sql, [data]).then(result => {
+      return Promise.resolve({
+        received: count,
+        stored: result.affectedRows,
+        duplicates: count - countIgnoredValues - result.affectedRows,
+        malformed: countIgnoredValues,
+        timestampAdded: countAddedTimestamp
+      });
     });
   }
 
