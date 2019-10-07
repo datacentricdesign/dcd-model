@@ -29,6 +29,9 @@ class Thing {
       if (thing.registered_at !== undefined) {
         this.registeredAt = thing.registered_at;
       }
+      if (thing.pem !== undefined) {
+        this.pem = thing.pem;
+      }
     } else {
       this.id = id !== undefined ? id : idGen.toID(name);
       this.name = name;

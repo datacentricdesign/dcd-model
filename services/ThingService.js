@@ -69,7 +69,9 @@ class ThingService {
               return this.model.policies.grant(thing.id, thing.id, "subject");
             })
             .then(() => {
-              if (jwt) {
+              if (thing.pem !== undefined) {
+                return this.model.auth.setPEM(thing.id);
+              } else if (jwt) {
                 logger.debug("new thing jwt");
                 return this.generateKeys(thing.id);
               }
