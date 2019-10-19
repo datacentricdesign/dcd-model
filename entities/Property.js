@@ -263,6 +263,27 @@ const Types = {
       }
     ]
   },
+  EULER_ANGLE: {
+    name: "Euler Angle",
+    description: "The orientation of a rigid body with respect to a fixed coordinate system",
+    dimensions: [
+      {
+        name: "x",
+        description: "",
+        unit: "degree"
+      },
+      {
+        name: "y",
+        description: "",
+        unit: "degree"
+      },
+      {
+        name: "z",
+        description: "",
+        unit: "degree"
+      }
+    ]
+  },
   LIGHT: {
     name: "Light",
     description: "Light level",

@@ -70,12 +70,11 @@ class ThingService {
             })
             .then(() => {
               if (thing.pem !== undefined) {
-                return this.model.auth.setPEM(thing.id);
+                return this.model.auth.setPEM(thing.id, thing.pem);
               } else if (jwt) {
                 logger.debug("new thing jwt");
                 return this.generateKeys(thing.id);
               }
-              return Promise.resolve();
             })
             .then(keys => {
               if (keys !== undefined) {

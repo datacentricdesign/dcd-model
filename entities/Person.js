@@ -61,6 +61,8 @@ class Person {
       this.id = "dcd:persons:" + this.id;
     }
 
+    this.id = this.id.toLowerCase();
+
     this.readAt = Date.now();
   }
 
