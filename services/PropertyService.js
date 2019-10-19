@@ -59,7 +59,7 @@ class PropertyService {
       .then(property => {
         if (from !== undefined && to !== undefined) {
           // return this.model.dao.readPropertyValues(property, from, to);
-          return this.model.influx.readPropertyValues(
+          return this.model.influxdb.readPropertyValues(
             property,
             from,
             to,
