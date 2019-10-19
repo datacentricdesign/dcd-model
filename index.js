@@ -3,9 +3,10 @@ const InteractionService = require("./services/InteractionService");
 const PersonService = require("./services/PersonService");
 const PropertyService = require("./services/PropertyService");
 const StatsService = require("./services/StatsService");
-const MySQL = require("./dao/mysql");
 
+const MySQL = require("./dao/mysql");
 const Kafka = require("./dao/kafka");
+const InfluxDb = require("./dao/influxdb");
 
 let authEnabled =
   process.env.AUTH_ENABLED === undefined || process.env.AUTH_ENABLED === "true";
@@ -42,6 +43,10 @@ class DCDModel {
 
     this.dao = new MySQL();
     this.dao.connect(host, user, pass, name);
+
+    const influxHost = process.env.INFLUXDB_HOST || "influxdb";
+    const influxDatabase = process.env.INFLUXDB_NAME || "dcdhub";
+    this.influxdb = new InfluxDb(influxHost, influxDatabase);
   }
 
   setServices() {

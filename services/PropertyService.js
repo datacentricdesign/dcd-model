@@ -38,18 +38,34 @@ class PropertyService {
   }
 
   /**
-   * @param entityId
-   * @param propertyId
-   * @param from
-   * @param to
+   * @param {string} entityId
+   * @param {string} propertyId
+   * @param {int} from
+   * @param {int} to
+   * @param {int} interval
+   * @param {string} fill
    * @return {Promise<Property>}
    */
-  read(entityId, propertyId, from = undefined, to = undefined) {
+  read(
+    entityId,
+    propertyId,
+    from = undefined,
+    to = undefined,
+    interval = undefined,
+    fill = "none"
+  ) {
     return this.model.dao
       .readProperty(entityId, propertyId)
       .then(property => {
         if (from !== undefined && to !== undefined) {
-          return this.model.dao.readPropertyValues(property, from, to);
+          // return this.model.dao.readPropertyValues(property, from, to);
+          return this.model.influx.readPropertyValues(
+            property,
+            from,
+            to,
+            interval,
+            fill
+          );
         } else {
           return Promise.resolve(property);
         }
