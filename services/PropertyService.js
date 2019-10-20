@@ -42,8 +42,10 @@ class PropertyService {
    * @param {string} propertyId
    * @param {int} from
    * @param {int} to
-   * @param {int} interval
+   * @param {string} interval
+   * @param {string} fctInterval
    * @param {string} fill
+   * @param {string} dao
    * @return {Promise<Property>}
    */
   read(
@@ -52,20 +54,26 @@ class PropertyService {
     from = undefined,
     to = undefined,
     interval = undefined,
-    fill = "none"
+    fctInterval = "MEAN",
+    fill = "none",
+    dao = "mysql"
   ) {
     return this.model.dao
       .readProperty(entityId, propertyId)
       .then(property => {
         if (from !== undefined && to !== undefined) {
-          // return this.model.dao.readPropertyValues(property, from, to);
-          return this.model.influxdb.readPropertyValues(
-            property,
-            from,
-            to,
-            interval,
-            fill
-          );
+          if (dao === "influx") {
+            return this.model.dao.readPropertyValues(property, from, to);
+          } else {
+            return this.model.influxdb.readPropertyValues(
+              property,
+              from,
+              to,
+              interval,
+              fctInterval,
+              fill
+            );
+          }
         } else {
           return Promise.resolve(property);
         }
