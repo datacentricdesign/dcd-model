@@ -12,6 +12,7 @@ class PropertyService {
    */
   constructor(newModel) {
     this.model = newModel;
+    this.propertyMap = {};
   }
 
   /**
@@ -111,11 +112,25 @@ class PropertyService {
       return Promise.resolve();
     }
 
+    if (property.dimensions === undefined) {
+      const ref = property.entityId + "_" + property.id;
+      if (this.propertyMap[ref] === undefined) {
+        return this.read(property.entityId, property.id)
+          .then(retrievedProperty => {
+            this.propertyMap[ref] = retrievedProperty;
+          })
+          .then(() => {
+            return this.updateValues(property);
+          });
+      }
+      property.dimensions = this.propertyMap[ref].dimensions;
+    }
+
     return this.model.dao
       .updatePropertyValues(property)
       .then(report => {
         // Publish the property values to kafka
-        return this.valuesToKafka(property.values, property.id).then(() => {
+        return this.valuesToKafka(property).then(() => {
           return Promise.resolve(report);
         });
       })
@@ -190,11 +205,11 @@ class PropertyService {
 
   /**
    * Send values to Kafka.
-   * @param {Array} values
-   * @param {String} key - thingId-propertyId
+   * @param {Property} property
    */
-  valuesToKafka(values, key) {
-    return this.model.kafka.pushData("values", values, key);
+  valuesToKafka(property) {
+    const key = `${property.entityId}_${property.id}`;
+    return this.model.kafka.pushData("values", [property], key);
   }
 }
 

@@ -338,12 +338,11 @@ const testValues = [
     0.06171869486570358,
     -0.06167660653591156,
     -0.19948981702327728
-  ]
-  [
-    1570467349596,
+  ][
+    (1570467349596,
     0.06406598538160324,
     -0.06137761101126671,
-    -0.20296789705753326
+    -0.20296789705753326)
   ],
   [
     1570467349727,
@@ -16521,7 +16520,14 @@ describe("createThing()", () => {
     return new Promise(resolve => {
       return setTimeout(() => {
         return this.influx
-          .readPropertyValues(property, 1570467145138, 1570467624125, "1m", "MEAN", "none")
+          .readPropertyValues(
+            property,
+            1570467145138,
+            1570467624125,
+            "2m",
+            "MEAN",
+            "none"
+          )
           .then(result => {
             console.log(JSON.stringify(result));
             return result;

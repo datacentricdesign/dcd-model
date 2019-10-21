@@ -21,7 +21,6 @@ class MySQL {
    */
   constructor() {
     this.pool = null;
-    this.propertyIndexMap = {};
   }
 
   /**
@@ -124,46 +123,12 @@ class MySQL {
       return Promise.resolve();
     }
     const values = property.values;
-    let dimensions = null;
-    if (this.propertyIndexMap.hasOwnProperty(property.id)) {
-      // pick dimension number from the cache
-      dimensions = this.propertyIndexMap[property.id];
-    } else {
-      // no dimension number yet, let's retrieve that from the database
-      const sqlId =
-        "SELECT p.`index_id`, p.`type`," +
-        " COUNT(*) AS 'num_dimensions' \n" +
-        "FROM `properties` p \n" +
-        "  JOIN `dimensions` d" +
-        "    ON p.`index_id`=d.`property_index_id` \n" +
-        "WHERE p.`id` = ? \n" +
-        "GROUP BY p.`index_id`";
-      return this.exec(sqlId, [property.id]).then(result => {
-        if (result.length !== 1) {
-          return Promise.reject(
-            new DCDError(
-              404,
-              "The property to be updated (" +
-                property.id +
-                ") could not be found"
-            )
-          );
-        }
-        // Store the number of dimension in the cache
-        this.propertyIndexMap[property.id] = {
-          index: result[0].index_id,
-          type: result[0].type,
-          num_dimensions: result[0].num_dimensions
-        };
-        // Now that we have the dimension nb, rerun the function.
-        return this.updatePropertyValues(property);
-      });
-    }
+    let nbDimensions = property.dimensions.length;
 
     let sql = "INSERT IGNORE INTO `d";
-    sql += dimensions.type === "TEXT" ? "text" : dimensions.num_dimensions;
+    sql += property.dimensions[0].type === "TEXT" ? "text" : nbDimensions;
     sql += "` (`property_index_id`, `timestamp`";
-    for (let index = 1; index <= dimensions.num_dimensions; index++) {
+    for (let index = 1; index <= nbDimensions; index++) {
       sql += ",`value" + index + "`";
     }
     sql += ") VALUES ?";
@@ -172,15 +137,15 @@ class MySQL {
     let countAddedTimestamp = 0;
     let countIgnoredValues = 0;
     for (let i = 0; i < values.length; i++) {
-      let row = [dimensions.index];
+      let row = [property.indexId];
       count++;
-      if (values[i].length === dimensions.num_dimensions) {
+      if (values[i].length === nbDimensions) {
         // Missing timestamp, adding time
         values[i].unshift(+new Date());
         countAddedTimestamp++;
       } else if (
-        values[i].length < dimensions.num_dimensions ||
-        values[i].length > dimensions.num_dimensions + 1
+        values[i].length < nbDimensions ||
+        values[i].length > nbDimensions + 1
       ) {
         // Wrong number of dimension
         countIgnoredValues++;
@@ -635,7 +600,7 @@ class MySQL {
       "SELECT p.`name` AS 'pname'," +
       " p.`description` AS 'pdesc'," +
       " p.`type` AS 'ptype', p.`registered_at`, p.`id`," +
-      " d.`name`, d.`description`, d.`unit`\n" +
+      " p.`index_id`, d.`name`, d.`description`, d.`unit`\n" +
       "FROM `properties` p JOIN `dimensions` d" +
       " ON p.`index_id` = d.`property_index_id`\n" +
       "WHERE p.`entity_id` = ? AND  p.`id` = ?";
@@ -657,6 +622,7 @@ class MySQL {
           data.id
         );
         property.registeredAt = data.registered_at.getTime();
+        property.indexId = data.index_id;
         return Promise.resolve(property);
       } else {
         return Promise.reject(
@@ -724,39 +690,6 @@ class MySQL {
       const propertyWithValues = new Property(property);
       propertyWithValues.addValues(values);
       return Promise.resolve(propertyWithValues);
-    });
-  }
-
-  /**
-   * @param propertyId
-   * @return {Promise<Object>}
-   */
-  getPropertyIndexAndDimensionCount(propertyId) {
-    const dim = this.propertyIndexMap[propertyId];
-    if (dim !== undefined) {
-      return Promise.resolve();
-    }
-    const sqlId =
-      "SELECT p.`index_id`, COUNT(*) AS 'num_dimensions' \n" +
-      "FROM `properties` p \n" +
-      "  JOIN `dimensions` d ON p.`index_id`=d.`property_index_id` \n" +
-      "WHERE p.`id` = ? ";
-    return this.exec(sqlId, [propertyId]).then(result => {
-      if (result.length !== 1) {
-        return Promise.reject(
-          new DCDError(
-            404,
-            "Could not find Dimension count and property index for property id " +
-              propertyId +
-              "."
-          )
-        );
-      }
-      this.propertyIndexMap[propertyId] = {
-        index: result[0].index_id,
-        num_dimensions: result[0].num_dimensions
-      };
-      return this.propertyIndexMap[propertyId];
     });
   }
 

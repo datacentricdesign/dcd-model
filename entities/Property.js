@@ -265,7 +265,8 @@ const Types = {
   },
   EULER_ANGLE: {
     name: "Euler Angle",
-    description: "The orientation of a rigid body with respect to a fixed coordinate system",
+    description:
+      "The orientation of a rigid body with respect to a fixed coordinate system",
     dimensions: [
       {
         name: "x",
