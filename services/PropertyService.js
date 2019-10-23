@@ -64,8 +64,6 @@ class PropertyService {
       .then(property => {
         if (from !== undefined && to !== undefined) {
           if (dao === "influx") {
-            return this.model.dao.readPropertyValues(property, from, to);
-          } else {
             return this.model.influxdb.readPropertyValues(
               property,
               from,
@@ -74,6 +72,8 @@ class PropertyService {
               fctInterval,
               fill
             );
+          } else {
+            return this.model.dao.readPropertyValues(property, from, to);
           }
         } else {
           return Promise.resolve(property);
