@@ -12,6 +12,7 @@ class PropertyService {
    */
   constructor(newModel) {
     this.model = newModel;
+    this.propertyMap = {};
   }
 
   /**
@@ -38,18 +39,42 @@ class PropertyService {
   }
 
   /**
-   * @param entityId
-   * @param propertyId
-   * @param from
-   * @param to
+   * @param {string} entityId
+   * @param {string} propertyId
+   * @param {int} from
+   * @param {int} to
+   * @param {string} interval
+   * @param {string} fctInterval
+   * @param {string} fill
+   * @param {string} dao
    * @return {Promise<Property>}
    */
-  read(entityId, propertyId, from = undefined, to = undefined) {
+  read(
+    entityId,
+    propertyId,
+    from = undefined,
+    to = undefined,
+    interval = undefined,
+    fctInterval = "MEAN",
+    fill = "none",
+    dao = "mysql"
+  ) {
     return this.model.dao
       .readProperty(entityId, propertyId)
       .then(property => {
         if (from !== undefined && to !== undefined) {
-          return this.model.dao.readPropertyValues(property, from, to);
+          if (dao === "influx") {
+            return this.model.influxdb.readPropertyValues(
+              property,
+              from,
+              to,
+              interval,
+              fctInterval,
+              fill
+            );
+          } else {
+            return this.model.dao.readPropertyValues(property, from, to);
+          }
         } else {
           return Promise.resolve(property);
         }
@@ -66,9 +91,12 @@ class PropertyService {
   update(property) {
     return this.model.dao
       .updateProperty(property)
-      .then(() => {
+      .then(updated => {
         // Publish the property values to kafka
-        return this.toKafka(property);
+        if (updated) {
+          return this.toKafka(property);
+        }
+        return Promise.resolve();
       })
       .catch(error => {
         return Promise.reject(error);
@@ -83,11 +111,28 @@ class PropertyService {
     if (property.values === undefined || property.values.length === 0) {
       return Promise.resolve();
     }
+
+    if (property.dimensions === undefined) {
+      const ref = property.entityId + "_" + property.id;
+      if (this.propertyMap[ref] === undefined) {
+        return this.read(property.entityId, property.id)
+          .then(retrievedProperty => {
+            this.propertyMap[ref] = retrievedProperty;
+          })
+          .then(() => {
+            return this.updateValues(property);
+          });
+      }
+      property.dimensions = this.propertyMap[ref].dimensions;
+    }
+
     return this.model.dao
       .updatePropertyValues(property)
-      .then(() => {
+      .then(report => {
         // Publish the property values to kafka
-        return this.valuesToKafka(property.values, property.id);
+        return this.valuesToKafka(property).then(() => {
+          return Promise.resolve(report);
+        });
       })
       .catch(error => {
         return Promise.reject(error);
@@ -160,11 +205,11 @@ class PropertyService {
 
   /**
    * Send values to Kafka.
-   * @param {Array} values
-   * @param {String} key - thingId-propertyId
+   * @param {Property} property
    */
-  valuesToKafka(values, key) {
-    return this.model.kafka.pushData("values", values, key);
+  valuesToKafka(property) {
+    const key = `${property.entityId}_${property.id}`;
+    return this.model.kafka.pushData("values", [property], key);
   }
 }
 

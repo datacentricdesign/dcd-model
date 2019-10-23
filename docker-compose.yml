@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    ports:
+      - 8086:8086
+      - 8083:8083
+    environment:
+      - INFLUXDB_DB=$INFLUXDB_DB
+      - INFLUXDB_ADMIN_ENABLED=true
+

@@ -5,8 +5,8 @@ const log4js = require("log4js");
 const logger = log4js.getLogger("[dcd:things]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
-const policies = require("../lib/policies");
 const idGen = require("../lib/id");
+const DCDError = require("../lib/Error");
 
 class ThingService {
   /**
@@ -26,6 +26,15 @@ class ThingService {
    * returns Thing
    **/
   create(actorId, thing, jwt) {
+    if (thing.id === undefined) {
+      return Promise.reject(new DCDError(4003, "Add field id."));
+    }
+    if (thing.name === undefined || thing.name === "") {
+      return Promise.reject(new DCDError(4003, "Add field name."));
+    }
+    if (thing.type === undefined || thing.type === "") {
+      return Promise.reject(new DCDError(4003, "Add field type."));
+    }
     return this.model.things
       .read(thing.id)
       .then(retrievedThing => {
@@ -50,20 +59,22 @@ class ThingService {
               return this.toKafka(thing);
             })
             .then(() => {
-              return this.model.dao.createRole(thing.id, actorId, "owner");
+              // Give owner role to the current user on the new Thing
+              logger.debug("new thing owner");
+              return this.model.policies.grant(actorId, thing.id, "owner");
             })
             .then(() => {
-              logger.debug("create: Sent to kafka");
-              return createAccessPolicy(thing.id);
+              // Give subject role to the new Thing
+              logger.debug("new thing subject");
+              return this.model.policies.grant(thing.id, thing.id, "subject");
             })
             .then(() => {
-              return createOwnerAccessPolicy(thing.id, actorId);
-            })
-            .then(() => {
-              if (jwt) {
+              if (thing.pem !== undefined) {
+                return this.model.auth.setPEM(thing.id, thing.pem);
+              } else if (jwt) {
+                logger.debug("new thing jwt");
                 return this.generateKeys(thing.id);
               }
-              return Promise.resolve();
             })
             .then(keys => {
               if (keys !== undefined) {
@@ -72,6 +83,7 @@ class ThingService {
                   keys.jwt = this.model.auth.generateJWT(keys.privateKey);
                 }
               }
+              logger.debug("new thing done");
               return Promise.resolve(thing);
             })
             .catch(error => {
@@ -106,7 +118,7 @@ class ThingService {
       })
       .then(results => {
         thing.properties = results;
-        return Promise.resolve(removePrefixThing(thing));
+        return Promise.resolve(thing);
       })
       .catch(error => {
         return Promise.reject(error);
@@ -128,7 +140,17 @@ class ThingService {
    * @return {Promise}
    */
   del(thingId) {
-    return this.model.dao.deleteThing(thingId);
+    return this.model.dao.deleteThing(thingId).then(result => {
+      if (result.affectedRows > 0) {
+        return Promise.resolve(result.affectedRows);
+      }
+      return Promise.reject(
+        new DCDError(
+          404,
+          "Thing to delete " + thingId + " could not be not found."
+        )
+      );
+    });
   }
 
   /**
@@ -157,58 +179,3 @@ class ThingService {
 }
 
 module.exports = ThingService;
-
-/**
- * Generate an access policy for a thing.
- * @param thingId
- * @returns {Promise<>}
- */
-function createAccessPolicy(thingId) {
-  const thingPolicy = {
-    id: thingId + "-" + thingId + "-cru-policy",
-    effect: "allow",
-    actions: ["dcd:actions:create", "dcd:actions:read", "dcd:actions:update"],
-    subjects: ["dcd:things:" + thingId],
-    resources: [
-      "dcd:things:" + thingId,
-      "dcd:things:" + thingId + ":properties",
-      "dcd:things:" + thingId + ":properties:<.*>"
-    ]
-  };
-  logger.debug("Thing policy: " + JSON.stringify(thingPolicy));
-  return policies.create(thingPolicy);
-}
-
-/**
- * Generate an access policy for the owner of a thing.
- * @param thingId
- * @param subject
- * @returns {Promise<>}
- */
-function createOwnerAccessPolicy(thingId, subject) {
-  const thingOwnerPolicy = {
-    id: thingId + "-" + subject + "-clrud-policy",
-    effect: "allow",
-    actions: [
-      "dcd:actions:create",
-      "dcd:actions:list",
-      "dcd:actions:read",
-      "dcd:actions:update",
-      "dcd:actions:delete"
-    ],
-    subjects: [subject],
-    resources: [
-      "dcd:things:" + thingId,
-      "dcd:things:" + thingId + ":properties",
-      "dcd:things:" + thingId + ":properties:<.*>",
-      "dcd:things:" + thingId + ":interactions:",
-      "dcd:things:" + thingId + ":interactions:<.*>"
-    ]
-  };
-  return policies.create(thingOwnerPolicy);
-}
-
-const removePrefixThing = thing => {
-  thing.id = thing.id.replace("things:", "");
-  return thing;
-};

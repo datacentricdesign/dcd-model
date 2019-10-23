@@ -5,12 +5,12 @@ const idGen = require("../lib/id");
 class Property {
   /**
    *
-   * @param {String|Object} name
-   * @param {String} description
-   * @param {String} type
+   * @param {string|Object} name
+   * @param {string} description
+   * @param {string} type
    * @param {Dimension[]} dimensions
    * @param {Classes[]} classes
-   * @param {String} id
+   * @param {string} id
    */
   constructor(
     name = "",
@@ -37,8 +37,7 @@ class Property {
         this.name = "";
       }
 
-      this.id =
-        property.id !== undefined ? property.id : idGen.toID(this.name);
+      this.id = property.id !== undefined ? property.id : idGen.toID(this.name);
 
       if (property.description !== undefined) {
         this.description = property.description;
@@ -136,6 +135,17 @@ class Property {
 }
 
 const Types = {
+  TEXT: {
+    name: "Text",
+    description: "",
+    dimensions: [
+      {
+        name: "Text",
+        description: "",
+        unit: ""
+      }
+    ]
+  },
   ACCELEROMETER: {
     name: "Accelerometer",
     description:
@@ -250,6 +260,28 @@ const Types = {
         description:
           "Rotation vector component along the z axis (z * sin(theta/2)).",
         unit: ""
+      }
+    ]
+  },
+  EULER_ANGLE: {
+    name: "Euler Angle",
+    description:
+      "The orientation of a rigid body with respect to a fixed coordinate system",
+    dimensions: [
+      {
+        name: "x",
+        description: "",
+        unit: "degree"
+      },
+      {
+        name: "y",
+        description: "",
+        unit: "degree"
+      },
+      {
+        name: "z",
+        description: "",
+        unit: "degree"
       }
     ]
   },
@@ -410,6 +442,33 @@ const Types = {
         name: "Duration",
         description: "Duration of the video record.",
         unit: "ms"
+      }
+    ]
+  },
+  AUDIO: {
+    name: "Audio",
+    description: "",
+    dimensions: [
+      {
+        name: "Duration",
+        description: "Duration of the audio record.",
+        unit: "ms"
+      }
+    ]
+  },
+  PICTURE: {
+    name: "Picture",
+    description: "",
+    dimensions: [
+      {
+        name: "x",
+        description: "Horizontal resolution",
+        unit: "px"
+      },
+      {
+        name: "y",
+        description: "Vertical resolution",
+        unit: "px"
       }
     ]
   },
