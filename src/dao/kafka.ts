@@ -11,7 +11,7 @@ const kafka = require("kafka-node");
 
 const TOPICS = ["things", "properties", "persons", "values"];
 
-class Kafka {
+export class Kafka {
   constructor() {
     logger.info("Kafka constructor");
 
@@ -133,5 +133,3 @@ class Kafka {
     });
   }
 }
-
-module.exports = Kafka;

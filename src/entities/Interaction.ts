@@ -1,8 +1,15 @@
 "use strict";
 
-const idGen = require("../lib/id");
+import { uuidv4 } from "../lib/id";
+import { Property, IProperty } from "./Property";
 
-class Interaction {
+export class Interaction {
+  id: any;
+  entityId1: any;
+  entityId2: any;
+  properties: any[];
+  type: string;
+  readAt: number;
   /**
    * @param {string|JSON} type
    * @param entityId1
@@ -10,8 +17,14 @@ class Interaction {
    * @param properties
    * @param id
    */
-  constructor(type = "", entityId1, entityId2, properties = [], id) {
-    if (typeof type === "object") {
+  constructor(
+    type: string | IInteraction = "",
+    entityId1: string,
+    entityId2: string,
+    properties: Property[] = [],
+    id: string
+  ) {
+    if (type instanceof IInteraction) {
       const interaction = type;
       this.id = interaction.id;
       this.entityId1 =
@@ -21,7 +34,7 @@ class Interaction {
       this.properties =
         interaction.properties !== undefined ? interaction.properties : [];
     } else {
-      this.id = id !== undefined ? id : idGen.uuidv4();
+      this.id = id !== undefined ? id : uuidv4();
       this.type = type;
       this.entityId1 = entityId1;
       this.entityId2 = entityId2;
@@ -31,4 +44,9 @@ class Interaction {
   }
 }
 
-module.exports = Interaction;
+export interface IInteraction {
+  id: string;
+  entity_id_1: string;
+  entity_id_2: string;
+  properties: IProperties[];
+}

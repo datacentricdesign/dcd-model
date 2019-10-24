@@ -5,7 +5,7 @@ const log4js = require("log4js");
 const logger = log4js.getLogger("[dcd:properties]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
-class PropertyService {
+export class PropertyService {
   /**
    *
    * @constructor
@@ -212,5 +212,3 @@ class PropertyService {
     return this.model.kafka.pushData("values", [property], key);
   }
 }
-
-module.exports = PropertyService;

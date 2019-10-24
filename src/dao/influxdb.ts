@@ -9,7 +9,7 @@ const Influx = require("influx");
 
 const propertyMap = {};
 
-class InfluxDB {
+export class InfluxDB {
   /**
    * @param {String} host         Host of InfluxDB server
    * @param {String} database     Name of the database
@@ -658,5 +658,3 @@ const schema = [
     tags: ["entity_id", "property_id"]
   }
 ];
-
-module.exports = InfluxDB;

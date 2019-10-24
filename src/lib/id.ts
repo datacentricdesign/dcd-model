@@ -3,7 +3,7 @@
  * @param {string} str
  * @returns {string}
  */
-function toID(str) {
+export function toID(str) {
   return (
     str
       .trim()
@@ -15,13 +15,11 @@ function toID(str) {
   );
 }
 
-exports.toID = toID;
-
 /**
  * Generate UUID.
  * @returns {string}
  */
-function uuidv4() {
+export function uuidv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
     const r = (Math.random() * 16) | 0,
       v = c === "x" ? r : (r & 0x3) | 0x8;
@@ -29,18 +27,14 @@ function uuidv4() {
   });
 }
 
-exports.uuidv4 = uuidv4;
-
 /**
  * Generate a short UUID-style random string.
  * @returns {string}
  */
-function uuidShort() {
+export function uuidShort() {
   return "xxxx".replace(/[xy]/g, function(c) {
     const r = (Math.random() * 16) | 0,
       v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
-
-exports.uuidShort = uuidShort;

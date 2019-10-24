@@ -18,7 +18,7 @@ const HTTPS = process.env.HTTPS;
 
 const scope = process.env.OAUTH2_SCOPE || "";
 
-const DCDError = require("../lib/Error");
+const DCDError = require("./Error");
 
 // Setting the logs
 const log4js = require("log4js");
@@ -29,7 +29,7 @@ logger.level = process.env.LOG_LEVEL || "INFO";
  * This class handle Authentication and Authorisation processes
  * when interacting with the DCD Hub.
  */
-class Auth {
+export class Auth {
   constructor(newModel) {
     this.model = newModel;
     this.token = null;
@@ -394,5 +394,3 @@ class Auth {
       });
   }
 }
-
-module.exports = Auth;

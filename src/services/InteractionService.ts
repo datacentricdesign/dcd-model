@@ -7,7 +7,7 @@ logger.level = process.env.LOG_LEVEL || "INFO";
 
 const idGen = require("../lib/id");
 
-class InteractionService {
+export class InteractionService {
   /**
    *
    * @constructor
@@ -163,5 +163,3 @@ function createAccessPolicy(interactionId, thingId1, thingId2) {
   logger.debug("Thing policy: " + JSON.stringify(thingPolicy));
   return policies.create(thingPolicy);
 }
-
-module.exports = InteractionService;

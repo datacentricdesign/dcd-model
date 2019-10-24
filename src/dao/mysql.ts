@@ -5,7 +5,7 @@ const log4js = require("log4js");
 const logger = log4js.getLogger("[lib:mysql]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
-const mysql = require("mysql");
+const mysql = require("src/dao/mysql");
 const Person = require("../entities/Person");
 const Thing = require("../entities/Thing");
 const Interaction = require("../entities/Interaction");
@@ -15,7 +15,7 @@ const Class = require("../entities/Class");
 
 const DCDError = require("../lib/Error");
 
-class MySQL {
+export class MySQL {
   /**
    *
    */
@@ -1065,5 +1065,3 @@ class MySQL {
     }
   }
 }
-
-module.exports = MySQL;

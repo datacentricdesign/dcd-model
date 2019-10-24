@@ -8,7 +8,7 @@ logger.level = process.env.LOG_LEVEL || "INFO";
 const idGen = require("../lib/id");
 const DCDError = require("../lib/Error");
 
-class ThingService {
+export class ThingService {
   /**
    *
    * @constructor
@@ -177,5 +177,3 @@ class ThingService {
     });
   }
 }
-
-module.exports = ThingService;

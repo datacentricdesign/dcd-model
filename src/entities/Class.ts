@@ -1,6 +1,11 @@
 "use strict";
 
-class Class {
+export class Class {
+  name: string;
+  value: string;
+  propertyId: string;
+  description: string;
+
   /**
    * @constructor
    */
@@ -19,5 +24,3 @@ class Class {
     }
   }
 }
-
-module.exports = Class;

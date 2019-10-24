@@ -1,18 +1,35 @@
-const ThingService = require("./services/ThingService");
-const InteractionService = require("./services/InteractionService");
-const PersonService = require("./services/PersonService");
-const PropertyService = require("./services/PropertyService");
-const StatsService = require("./services/StatsService");
+import { ThingService } from "./services/ThingService";
+import { InteractionService } from "./services/InteractionService";
+import { PersonService } from "./services/PersonService";
+import { PropertyService } from "./services/PropertyService";
+import { StatsService } from "./services/StatsService";
 
-const MySQL = require("./dao/mysql");
-const Kafka = require("./dao/kafka");
-const InfluxDb = require("./dao/influxdb");
+import { MySQL } from "./dao/mysql";
+import { Kafka } from "./dao/kafka";
+import { InfluxDB } from "./dao/influxdb";
+
+import { Auth } from "./lib/Auth";
+import { Policies } from "./lib/Policies";
 
 let authEnabled =
   process.env.AUTH_ENABLED === undefined || process.env.AUTH_ENABLED === "true";
 if (authEnabled === undefined) authEnabled = true;
 
 class DCDModel {
+
+  private auth: Auth;
+  private policies: Policies;
+
+  private kafka: Kafka;
+  private dao: MySQL;
+  private influxdb: InfluxDB;
+
+  private things: ThingService;
+  private interactions: InteractionService;
+  private persons: PersonService;
+  private properties: PropertyService;
+  private stats: StatsService;
+
   constructor() {
     this.setDAO();
 
@@ -21,11 +38,9 @@ class DCDModel {
     this.setServices();
 
     if (authEnabled) {
-      const Auth = require("./lib/Auth");
       this.auth = new Auth(this);
     }
 
-    const Policies = require("./lib/Policies");
     this.policies = new Policies(this);
   }
 
@@ -46,7 +61,7 @@ class DCDModel {
 
     const influxHost = process.env.INFLUXDB_HOST || "influxdb";
     const influxDatabase = process.env.INFLUXDB_NAME || "dcdhub";
-    this.influxdb = new InfluxDb(influxHost, influxDatabase);
+    this.influxdb = new InfluxDB(influxHost, influxDatabase);
   }
 
   setServices() {

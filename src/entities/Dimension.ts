@@ -1,6 +1,9 @@
 "use strict";
 
-class Dimension {
+export class Dimension {
+  name: string;
+  description: string;
+  unit: string;
   /**
    * @constructor
    */
@@ -10,5 +13,3 @@ class Dimension {
     this.unit = unit !== undefined ? unit : "";
   }
 }
-
-module.exports = Dimension;

@@ -10,7 +10,7 @@ logger.level = process.env.LOG_LEVEL || "INFO";
  * @param {int} code
  * @param {string} message
  */
-class DCDError {
+export class DCDError {
   constructor(code, hint) {
     this.code = code;
     this.hint = "";
@@ -91,5 +91,3 @@ class DCDError {
     }
   }
 }
-
-module.exports = DCDError;

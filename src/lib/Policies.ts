@@ -13,7 +13,7 @@ const DCDError = require("./Error");
 /**
  * Manage access policies
  */
-class Policies {
+export class Policies {
   /**
    *
    * @param {DCDModel} model
@@ -215,8 +215,6 @@ class Policies {
       });
   }
 }
-
-module.exports = Policies;
 
 const roleToActions = role => {
   switch (role) {

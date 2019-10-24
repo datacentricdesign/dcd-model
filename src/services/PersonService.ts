@@ -8,7 +8,7 @@ logger.level = process.env.LOG_LEVEL || "INFO";
 const Person = require("../entities/Person");
 const DCDError = require("../lib/Error");
 
-class PersonService {
+export class PersonService {
   /**
    *
    * @constructor
@@ -138,5 +138,3 @@ class PersonService {
     this.model.kafka.pushData("persons", [person], person.id);
   }
 }
-
-module.exports = PersonService;
