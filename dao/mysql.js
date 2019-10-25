@@ -70,6 +70,7 @@ class MySQL {
               return reject(new DCDError(500, error.message));
             }
           } else {
+            logger.debug(q.sql);
             return resolve(result);
           }
         });
