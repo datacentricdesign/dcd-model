@@ -124,6 +124,7 @@ class PropertyService {
           });
       }
       property.dimensions = this.propertyMap[ref].dimensions;
+      property.indexId = this.propertyMap[ref].indexId;
     }
 
     return this.model.dao
