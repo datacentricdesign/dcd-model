@@ -16478,9 +16478,9 @@ const testValues = [
   ]
 ];
 
-const InfluxDB = require("../dao/influxdb");
-const Thing = require("../entities/Thing");
-const Property = require("../entities/Property");
+const InfluxDB = require("../../dao/influxdb");
+const Thing = require("../../entities/Thing");
+const Property = require("../../entities/Property");
 
 describe("createThing()", () => {
   before(function() {

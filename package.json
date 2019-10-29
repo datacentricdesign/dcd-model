@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "mocha",
-    "test-influx": "LOG_LEVEL=debug mocha 'src/test/influx.test.js'",
+    "test-influx": "LOG_LEVEL=debug mocha 'src/test/dao/influx.test.js'",
     "test-auth": "mocha 'src/tests/*.test.js'",
     "test-mysql": "node 'src/tests/MySQL.test.js'",
     "test-service": "node 'src/tests/Service.test.js'"
@@ -21,7 +21,10 @@
   },
   "homepage": "https://github.com/datacentricdesign/dcd-model#README",
   "dependencies": {
+    "@types/mocha": "^5.2.7",
     "@types/node": "^12.11.5",
+    "@typescript-eslint/eslint-plugin": "^2.5.0",
+    "@typescript-eslint/parser": "^2.5.0",
     "influx": "5.4.2",
     "jsonwebtoken": "8.5.1",
     "jwk-to-pem": "2.0.1",
@@ -32,18 +35,19 @@
     "pem-jwk": "^2.0.0",
     "querystring": "0.2.0",
     "simple-oauth2": "2.4.0",
+    "typescript": "^3.6.4",
     "url": "0.11.0"
   },
   "devDependencies": {
     "babel-eslint": "10.0.2",
-    "eslint": "6.0.1",
+    "eslint": "^6.0.1",
     "mocha": "6.2.2",
     "nyc": "14.1.1",
-    "prettier": "1.18.2",
+    "prettier": "^1.18.2",
     "sqlite3": "4.1.0"
   },
   "optionalDependencies": {
-    "eslint-config-prettier": "4.0.0",
-    "eslint-plugin-prettier": "3.0.1"
+    "eslint-config-prettier": "^4.0.0",
+    "eslint-plugin-prettier": "^3.0.1"
   }
 }
