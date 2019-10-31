@@ -344,7 +344,8 @@ class MySQL {
       " ORDER BY `pname`, d.`name`";
     return this.exec(sql, [entityId]).then(results => {
       const properties = {};
-      results.forEach(data => {
+      for (let index = 0; index < results.length; index++) {
+        const data = results[index];
         const pId = data.property_id;
 
         // if we did not add this property yet
@@ -380,7 +381,7 @@ class MySQL {
             new Class(data.cname, data.cvalue, pId, data.cdesc)
           );
         }
-      });
+      }
       const propArray = [];
       for (let key in properties) {
         if (properties.hasOwnProperty(key)) {

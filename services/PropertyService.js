@@ -112,7 +112,7 @@ class PropertyService {
       return Promise.resolve();
     }
 
-    if (property.dimensions === undefined) {
+    if (property.dimensions === undefined || property.dimensions.length === 0) {
       const ref = property.entityId + "_" + property.id;
       if (this.propertyMap[ref] === undefined) {
         return this.read(property.entityId, property.id)
