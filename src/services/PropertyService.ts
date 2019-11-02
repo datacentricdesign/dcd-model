@@ -1,9 +1,9 @@
 'use strict';
 
 // Setting the logs
-import {CreationReport, Service} from './Service';
-import { Property } from '../entities/Property';
-import { Class } from '../entities/Class';
+import { CreationReport, Service } from './Service';
+import { Property } from '../model/Property';
+import { Class } from '../model/Class';
 
 export class PropertyService extends Service {
     propertyMap: {};

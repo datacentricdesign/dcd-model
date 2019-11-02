@@ -4,9 +4,9 @@ import { PersonService } from './services/PersonService';
 import { PropertyService } from './services/PropertyService';
 import { StatsService } from './services/StatsService';
 
-import { MySQL } from './dao/mysql';
-import { Kafka } from './dao/kafka';
-import { InfluxDB } from './dao/influxdb';
+import { MySQLStore } from './store/MySQLStore';
+import { KafkaStore } from './store/KafkaStore';
+import { InfluxDBStore } from './store/InfluxDBStore';
 
 import { Auth } from './lib/Auth';
 import { Policies } from './lib/Policies';
@@ -18,9 +18,9 @@ export class DCDModel {
     auth: Auth;
     policies: Policies;
 
-    kafka: Kafka;
-    dao: MySQL;
-    influxdb: InfluxDB;
+    kafka: KafkaStore;
+    dao: MySQLStore;
+    influxdb: InfluxDBStore;
 
     things: ThingService;
     interactions: InteractionService;
@@ -31,7 +31,7 @@ export class DCDModel {
     constructor() {
         this.setDAO();
 
-        this.kafka = new Kafka();
+        this.kafka = new KafkaStore();
 
         this.setServices();
 
@@ -54,12 +54,12 @@ export class DCDModel {
         const pass = process.env.MODEL_PASS || 'example';
         const name = process.env.MODEL_NAME || 'dcdhub';
 
-        this.dao = new MySQL();
+        this.dao = new MySQLStore();
         this.dao.connect(host, user, pass, name);
 
         const influxHost = process.env.INFLUXDB_HOST || 'influxdb';
         const influxDatabase = process.env.INFLUXDB_NAME || 'dcdhub';
-        this.influxdb = new InfluxDB(influxHost, influxDatabase);
+        this.influxdb = new InfluxDBStore(influxHost, influxDatabase);
     }
 
     setServices() {

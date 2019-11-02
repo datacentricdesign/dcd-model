@@ -6,11 +6,11 @@ const logger = log4js.getLogger('[lib:influx]');
 logger.level = process.env.LOG_LEVEL || 'INFO';
 
 import { InfluxDB, IPoint, FieldType } from 'influx';
-import { Property } from '../entities/Property';
+import { Property } from '../model/Property';
 
 const propertyMap = {};
 
-export class Influx {
+export class InfluxDBStore {
     influx: InfluxDB;
     host: string;
     dbName: string;

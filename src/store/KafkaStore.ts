@@ -11,7 +11,7 @@ import { KafkaClient, Producer, Consumer, KeyedMessage, Offset } from 'kafka-nod
 
 const TOPICS = ['things', 'properties', 'persons', 'values'];
 
-export class Kafka {
+export class KafkaStore {
     enable = false;
     producerIsReady = false;
     producer: Producer;
@@ -74,7 +74,7 @@ export class Kafka {
                     }
                     msgCount++;
                     if (msgCount >= 1000) {
-                        this.sendToKafka(topic, messages);
+                        this.sendToKafka(topic, messages).catch(error => logger.error(error));
                         messages = [];
                         msgCount = 0;
                     }
@@ -88,7 +88,7 @@ export class Kafka {
         return Promise.reject(new DCDError(500, 'Kafka not enabled.'));
     }
 
-    setConsumer(topics, options, onMessage) {
+    setConsumer(topics, options, onMessage): void {
         const consumer = new Consumer(this.client, topics, options);
         const offset = new Offset(this.client);
 
@@ -106,10 +106,11 @@ export class Kafka {
             topic.maxNum = 2;
             offset.fetch([topic], (error, offsets) => {
                 if (error) {
-                    return logger.error(error);
+                    logger.error(error);
+                } else {
+                    const min = Math.min.apply(null, offsets[topic.topic][topic.partition]);
+                    consumer.setOffset(topic.topic, topic.partition, min);
                 }
-                const min = Math.min.apply(null, offsets[topic.topic][topic.partition]);
-                consumer.setOffset(topic.topic, topic.partition, min);
             });
         });
     }

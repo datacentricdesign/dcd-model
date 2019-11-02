@@ -1,4 +1,4 @@
-import { Thing, JSONThing } from '../../entities/Thing';
+import { Thing, JSONThing } from '../../model/Thing';
 
 describe('Test Thing', () => {
     const json: JSONThing = {

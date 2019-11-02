@@ -32,9 +32,9 @@ logger.level = process.env.LOG_LEVEL || 'INFO';
  */
 export class Auth {
     model: DCDModel;
-    token: any;
-    jwtTokenMap: any[];
-    oauth2: any;
+    token: object;
+    jwtTokenMap: object[];
+    oauth2: object;
     constructor(newModel) {
         this.model = newModel;
         this.token = null;
@@ -111,7 +111,6 @@ export class Auth {
      * @returns {*}
      */
     generateJWT(privateKey) {
-        logger.debug('## generate JWT');
         const currentTime = Math.floor(Date.now() / 1000);
         const token = {
             iat: currentTime - 3600,
@@ -129,11 +128,9 @@ export class Auth {
      * @returns {Promise}
      */
     generateJWK(set, body): KeySet {
-        logger.debug('generate jwk ' + JSON.stringify(body));
         const url = process.env.HYDRA_ADMIN_URL + '/keys/' + set;
         return this.authorisedRequest('POST', url, body)
             .then(result => {
-                logger.debug('result to key');
                 const jwk = result.keys[0];
                 jwk.dp = '';
                 jwk.dq = '';
@@ -141,9 +138,6 @@ export class Auth {
                 const privateKey = jwkToPem(jwk, { private: true });
                 // Convert the JWK into a public key
                 this.jwtTokenMap[set] = jwkToPem(jwk);
-                logger.debug('pub');
-                logger.debug(this.jwtTokenMap[set]);
-                logger.debug('pub');
                 const keySet = {
                     algorithm: jwk.alg,
                     privateKey: privateKey,
@@ -162,7 +156,6 @@ export class Auth {
      * @returns {Promise<string|DCDError>}
      */
     getJWK(setId) {
-        logger.debug('get jwk ' + setId);
         const url = process.env.HYDRA_ADMIN_URL + '/keys/' + setId;
         return this.authorisedRequest('GET', url)
             .then(result => {
@@ -177,17 +170,13 @@ export class Auth {
             });
     }
 
-    setJWK(setId, jwk) {
-        logger.debug('set jwk ' + setId);
+    setJWK(setId, jwk): Promise<KeySet> {
         const url = process.env.HYDRA_ADMIN_URL + '/keys/' + setId;
         return this.authorisedRequest('PUT', url, jwk)
             .then(result => {
-                logger.debug('result set: ');
-                logger.debug(result);
                 const jwk = result.keys[0];
                 // Convert the JWK into a public key
-                const publicKey = jwkToPem(jwk);
-                this.jwtTokenMap[setId] = publicKey;
+                this.jwtTokenMap[setId] = jwkToPem(jwk);
                 return Promise.resolve(jwk);
             })
             .catch(error => {
@@ -195,9 +184,8 @@ export class Auth {
             });
     }
 
-    setPEM(setId, pem) {
-        logger.debug('set pem ' + setId);
-        this.setJWK(setId, pem2jwk(pem));
+    setPEM(setId, pem): Promise<KeySet> {
+        return this.setJWK(setId, pem2jwk(pem));
     }
 
     checkJWT(acp, entity) {
@@ -213,16 +201,11 @@ export class Auth {
                         });
                 })
                 .catch(error => {
-                    logger.error(error);
                     return Promise.reject(error);
                 });
         }
         const introspectionToken = jwt.verify(acp.token, this.jwtTokenMap[entity]);
         const currentTime = Math.floor(new Date() / 1000);
-        logger.debug(introspectionToken.aud);
-        logger.debug(API_URL);
-        logger.debug(introspectionToken.exp);
-        logger.debug(currentTime);
         if (
             introspectionToken.aud !== undefined &&
             introspectionToken.aud === API_URL &&
@@ -248,20 +231,14 @@ export class Auth {
                         });
                 })
                 .catch(error => {
-                    logger.error(error);
                     return Promise.reject(error);
                 });
         }
         return jwt.verify(token.toString(), this.jwtTokenMap[entity], {}, (error, introspectionToken) => {
             if (error) {
-                logger.error(error);
                 return Promise.reject(error);
             }
             const currentTime = Math.floor(new Date() / 1000);
-            logger.debug(introspectionToken.aud);
-            logger.debug(API_URL);
-            logger.debug(introspectionToken.exp);
-            logger.debug(currentTime);
             if (
                 introspectionToken.aud !== undefined &&
                 introspectionToken.aud === API_URL &&
@@ -276,18 +253,12 @@ export class Auth {
     }
 
     refresh() {
-        logger.debug('Refresh');
         if (this.token) {
-            logger.debug('refresh: token exist');
             if (this.token.expired()) {
-                logger.debug('refresh: token expired, get a new one');
                 return this.requestNewToken();
             }
-            logger.debug('refresh: token still valid');
             return Promise.resolve();
         }
-
-        logger.debug('refresh: no token yet, getting one');
         return this.requestNewToken();
     }
 
@@ -295,13 +266,10 @@ export class Auth {
         return this.oauth2.clientCredentials
             .getToken({ scope: scope })
             .then(result => {
-                logger.debug('refresh: new token, result:');
-                logger.debug(result);
                 this.token = this.oauth2.accessToken.create(result);
                 return Promise.resolve();
             })
             .catch(error => {
-                logger.error(error);
                 return Promise.reject(error);
             });
     }
@@ -320,19 +288,15 @@ export class Auth {
     //   return this.token
     //     .refresh(params)
     //     .then(t => {
-    //       logger.debug("refresh: token refreshed: ");
-    //       logger.debug(t);
     //       this.token = t;
     //       return Promise.resolve();
     //     })
     //     .catch(error => {
-    //       logger.debug("refresh: token failed to refresh: ");
-    //       logger.error(error);
     //       return Promise.reject(error);
     //     });
     // }
 
-    getBearer() {
+    getBearer(): string {
         return 'bearer ' + qs.escape(this.token.token.access_token);
     }
 
@@ -345,7 +309,6 @@ export class Auth {
      * @returns {Promise}
      */
     authorisedRequest(method, url, body = null, type = 'application/json') {
-        logger.debug('authorisedRequest() => ' + url);
         const options = {
             headers: {
                 Authorization: this.getBearer(),
@@ -356,7 +319,6 @@ export class Auth {
             timeout: 15000,
         };
         if (HTTPS !== undefined) {
-            logger.debug('HTTPS on, adding XFP header');
             options.headers['X-Forwarded-Proto'] = 'https';
         }
         if (body !== null) {
@@ -385,4 +347,5 @@ export class Auth {
 export interface KeySet {
     algorithm: string;
     privateKey: string;
+    jwt: object;
 }

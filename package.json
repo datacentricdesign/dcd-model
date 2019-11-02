@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "mocha",
-    "test-influx": "LOG_LEVEL=debug mocha 'src/test/dao/influx.test.js'",
+    "test-influx": "LOG_LEVEL=debug mocha 'src/test/store/influx.test.js'",
     "test-auth": "mocha 'src/tests/*.test.js'",
     "test-mysql": "node 'src/tests/MySQL.test.js'",
     "test-service": "node 'src/tests/Service.test.js'"

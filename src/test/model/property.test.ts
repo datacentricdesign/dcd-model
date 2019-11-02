@@ -1,6 +1,6 @@
-import { JSONProperty, Property } from '../../entities/Property';
-import { Class } from '../../entities/Class';
-import {Dimension} from "../../entities/Dimension";
+import { JSONProperty, Property } from '../../model/Property';
+import { Class } from '../../model/Class';
+import {Dimension} from "../../model/Dimension";
 
 describe('Test Property', () => {
     const json: JSONProperty = {

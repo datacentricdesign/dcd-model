@@ -1,6 +1,6 @@
-const sqlite3 = require('sqlite3').verbose();
+import sqlite3 = require('sqlite3');
 const db = new sqlite3.Database(':memory:');
-import fs from 'fs';
+import fs = require('fs');
 
 describe('test', function() {
     before(function() {

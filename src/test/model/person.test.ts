@@ -1,4 +1,4 @@
-import { Person } from '../../entities/Person';
+import { Person } from '../../model/Person';
 
 describe('Test Person', () => {
     const json = {

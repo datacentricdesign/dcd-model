@@ -2,13 +2,12 @@
 
 import mysql = require('mysql');
 
-import { Report } from '../services/PropertyService';
-import { Person } from '../entities/Person';
-import { Thing } from '../entities/Thing';
-import { Interaction } from '../entities/Interaction';
-import {JSONProperty, Property} from '../entities/Property';
-import { Dimension } from '../entities/Dimension';
-import { Class } from '../entities/Class';
+import { Person } from '../model/Person';
+import { Thing } from '../model/Thing';
+import { Interaction } from '../model/Interaction';
+import {JSONProperty, Property} from '../model/Property';
+import { Dimension } from '../model/Dimension';
+import { Class } from '../model/Class';
 import { DCDError } from '../lib/Error';
 import log4js = require('log4js');
 import {JSONCheck} from "../services/PersonService";
@@ -17,7 +16,7 @@ import {CreationReport, DeletionReport} from "../services/Service";
 const logger = log4js.getLogger('[lib:mysql]');
 logger.level = process.env.LOG_LEVEL || 'INFO';
 
-export class MySQL {
+export class MySQLStore {
     pool: mysql.Pool;
     /**
      *

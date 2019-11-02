@@ -2,7 +2,7 @@
 
 import { DeletionReport, Service } from './Service';
 
-import { Person } from '../entities/Person';
+import { Person } from '../model/Person';
 import { DCDError } from '../lib/Error';
 
 export class PersonService extends Service {

@@ -6,6 +6,7 @@ import { Service } from './Service';
 import { uuidv4 } from '../lib/id';
 import { DCDError } from '../lib/Error';
 import { KeySet } from '../lib/Auth';
+import { Thing } from '../model/Thing';
 
 export class ThingService extends Service {
     /**

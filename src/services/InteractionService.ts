@@ -2,7 +2,7 @@
 
 import { uuidv4 } from '../lib/id';
 import { DeletionReport, Service } from './Service';
-import { Interaction } from '../entities/Interaction';
+import { Interaction } from '../model/Interaction';
 
 export class InteractionService extends Service {
     /**
@@ -77,7 +77,7 @@ export class InteractionService extends Service {
                 return this.model.properties.list(id);
             })
             .then(results => {
-                interaction.properties = results;
+                interaction.setJSONProperties(results);
                 return Promise.resolve(interaction);
             })
             .catch(error => {

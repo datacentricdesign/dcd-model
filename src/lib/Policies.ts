@@ -13,6 +13,42 @@ import { DCDError } from './Error';
 import { DCDModel } from '../index';
 import { CreationReport } from '../services/Service';
 
+function roleToActions(role): string[] {
+    switch (role) {
+        case 'user':
+            return ['dcd:actions:create', 'dcd:actions:list'];
+        case 'reader':
+            return ['dcd:actions:read', 'dcd:actions:list'];
+        case 'owner':
+            return [
+                'dcd:actions:create',
+                'dcd:actions:list',
+                'dcd:actions:read',
+                'dcd:actions:update',
+                'dcd:actions:delete',
+                'dcd:actions:grant',
+                'dcd:actions:revoke',
+            ];
+        case 'subject':
+            return ['dcd:actions:create', 'dcd:actions:read', 'dcd:actions:update'];
+        default:
+            return [];
+    }
+}
+
+function entityToResource(entityId: string): string[] {
+    if (entityId === 'dcd') {
+        return ['dcd:things', 'dcd:persons'];
+    }
+    return [
+        entityId,
+        entityId + ':properties',
+        entityId + ':properties:<.*>',
+        entityId + ':interactions',
+        entityId + ':interactions:<.*>',
+    ];
+}
+
 /**
  * Manage access policies
  */
@@ -45,7 +81,7 @@ export class Policies {
      * @param {string} roleName
      * returns Promise
      **/
-    grant(subjectId, resourceId, roleName) {
+    grant(subjectId, resourceId, roleName): Promise<void> {
         return this.readPolicy(subjectId, resourceId, roleName)
             .then(policyId => {
                 // There is an existing policy, let's update
@@ -67,7 +103,7 @@ export class Policies {
      * @param {string} roleName
      * returns Promise
      **/
-    revoke(subjectId, resourceId, roleName) {
+    revoke(subjectId, resourceId, roleName): Promise<void> {
         return this.readPolicy(subjectId, resourceId, roleName)
             .then(policyId => {
                 // There is an existing policy, let's update
@@ -82,7 +118,7 @@ export class Policies {
             });
     }
 
-    readPolicy(subjectId, resourceId, roleName) {
+    readPolicy(subjectId, resourceId, roleName): Promise<string> {
         return this.model.dao.readRoleId(subjectId, resourceId, roleName).then(sqlResult => {
             if (sqlResult.length === 1) {
                 return Promise.resolve(sqlResult[0].id);
@@ -135,7 +171,7 @@ export class Policies {
             });
     }
 
-    check(acp) {
+    check(acp): Promise<object> {
         const url = this.ketoUrl.href + '/engines/acp/ory/regex/allowed';
         const options = {
             headers: this.ketoHeaders,
@@ -180,7 +216,7 @@ export class Policies {
             });
     }
 
-    deleteKetoPolicy(policyId) {
+    deleteKetoPolicy(policyId): Promise<object> {
         return fetch(this.ketoUrl.href + 'engines/acp/ory/regex/policies/' + policyId, {
             headers: this.ketoHeaders,
             method: 'DELETE',
@@ -193,39 +229,3 @@ export class Policies {
             });
     }
 }
-
-const roleToActions = role => {
-    switch (role) {
-        case 'user':
-            return ['dcd:actions:create', 'dcd:actions:list'];
-        case 'reader':
-            return ['dcd:actions:read', 'dcd:actions:list'];
-        case 'owner':
-            return [
-                'dcd:actions:create',
-                'dcd:actions:list',
-                'dcd:actions:read',
-                'dcd:actions:update',
-                'dcd:actions:delete',
-                'dcd:actions:grant',
-                'dcd:actions:revoke',
-            ];
-        case 'subject':
-            return ['dcd:actions:create', 'dcd:actions:read', 'dcd:actions:update'];
-        default:
-            return [];
-    }
-};
-
-const entityToResource = entityId => {
-    if (entityId === 'dcd') {
-        return ['dcd:things', 'dcd:persons'];
-    }
-    return [
-        entityId,
-        entityId + ':properties',
-        entityId + ':properties:<.*>',
-        entityId + ':interactions',
-        entityId + ':interactions:<.*>',
-    ];
-};
