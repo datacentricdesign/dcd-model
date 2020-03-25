@@ -2,10 +2,10 @@
 
 // Setting the logs
 const log4js = require("log4js");
-const logger = log4js.getLogger("[dcd:things]");
+const logger = log4js.getLogger("[dcd:stats]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
-class StatsService {
+class StatService {
 
  /**
    *
@@ -46,4 +46,4 @@ class StatsService {
 
 }
 
-module.exports = StatsService;
+module.exports = StatService;

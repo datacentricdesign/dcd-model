@@ -12,6 +12,8 @@ const Interaction = require("../entities/Interaction");
 const Property = require("../entities/Property");
 const Dimension = require("../entities/Dimension");
 const Class = require("../entities/Class");
+const Task = require("../entities/Task");
+const Resource = require("../entities/Resource");
 
 const DCDError = require("../lib/Error");
 
@@ -721,7 +723,7 @@ class MySQL {
 
   /**
    *
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countPersons() {
     const sql =
@@ -734,7 +736,7 @@ class MySQL {
 
   /**
    *
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countThings() {
     const sql = "SELECT COUNT(`id`) AS 'num_things' \n" + "FROM `things` p \n";
@@ -746,7 +748,7 @@ class MySQL {
 
   /**
    *
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countProperties() {
     const sql =
@@ -757,7 +759,7 @@ class MySQL {
     });
   }
   /**
-   * @return {Promise<Object>}
+   * @returns {Promise<Object>}
    */
   getGlobalStats() {
     return this.countPersons().then(num_persons => {
@@ -781,10 +783,10 @@ class MySQL {
   /**
    *
    * @param {String[]} types
-   * @return {Promise<Object>}
+   * @returns {Promise<Object>}
    */
   getGlobalTypesStats(types, json) {
-    if (types.length == 0) {
+    if (types.length === 0) {
       return Promise.resolve(json);
     } else {
       let propertyType = types[0];
@@ -812,7 +814,7 @@ class MySQL {
 
   /**
    * @param {string} propertyType
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countEntitiesByType(propertyType) {
     if (Property.types()[propertyType] === undefined) {
@@ -831,7 +833,7 @@ class MySQL {
 
   /**
    * @param {string} propertyType
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countPropertiesByType(propertyType) {
     if (Property.types()[propertyType] === undefined) {
@@ -851,7 +853,7 @@ class MySQL {
   /**
    *
    * @param {string} propertyType
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countValuesByType(propertyType) {
     if (Property.types()[propertyType] === undefined) {
@@ -874,7 +876,7 @@ class MySQL {
 
   /**
    * @param {string} propertyType
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countEntitiesInRangeByType(propertyType, from, to) {
     if (Property.types()[propertyType] === undefined) {
@@ -912,7 +914,7 @@ class MySQL {
    * @param {string} propertyType
    * @param {int} from
    * @param {int} to
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countPropertiesInRangeByType(propertyType, from, to) {
     if (Property.types()[propertyType] === undefined) {
@@ -950,7 +952,7 @@ class MySQL {
    * @param {string} propertyType
    * @param {int} from
    * @param {int} to
-   * @return {Promise<number>}
+   * @returns {Promise<number>}
    */
   countValuesInRangeByType(propertyType, from, to) {
     if (Property.types()[propertyType] === undefined) {
@@ -991,7 +993,7 @@ class MySQL {
    * @param {string[]} types
    * @param {int} from
    * @param {int} to
-   * @return {Promise<Object>}
+   * @returns {Promise<Object>}
    */
   getTypesStats(types, from, to) {
     let json = {
@@ -1019,10 +1021,10 @@ class MySQL {
    * @param {int} from
    * @param {int} to
    * @param {object} json
-   * @return {Promise<Object>}
+   * @returns {Promise<Object>}
    */
   fillTypesStatsJson(types, from, to, json) {
-    if (types.length == 0) {
+    if (types.length === 0) {
       return Promise.resolve(json);
     } else {
       let propertyType = types[0];
@@ -1066,6 +1068,390 @@ class MySQL {
       }
     }
   }
+
+    /**
+   *
+   * @param {Task} task
+   * @returns {Promise}
+   */
+  createTask(task) {
+    const insert = {
+      id: task.id,
+      name: task.name,
+      types: task.types.join(),
+      description: task.description,
+      from : task.from,
+      to : task.to,
+      actor_entity_id : task.actorEntityId
+    };
+    const sql = "INSERT INTO `tasks` SET ?";
+    return this.exec(sql, [insert]);
+  }
+
+  /**
+   * @param {Task} task
+   */
+  createResources(task){
+    let t = JSON.parse(JSON.stringify(task))
+    return this.getArrayResources(t)
+    .then(resources => {
+      return this.insertResources(resources)
+      .then(num_resources_created =>{
+        console.log(num_resources_created + " resources created")
+        return Promise.resolve(num_resources_created)
+      })
+    })
+  }
+
+  /**
+   * @param {Task} task
+   * @returns {Promise<Resource[]>} Array of resources of a task in the DB
+   */
+  getArrayResources(task, empty_json = {}){
+    if(task.types.length === 0){
+      let person_ids = Object.keys(empty_json)
+      let resources = []
+      person_ids.forEach(person_id => {
+
+        let milestones = [
+          {
+            timestamp : Date.now(),
+            shared_properties : empty_json[person_id].join(),
+            status : "unread"
+          }
+        ]
+
+        resources.push(new Resource(
+          task.id,
+          person_id,
+          milestones
+          ))
+      })
+      return Promise.resolve(resources);
+    }else{
+      let propertyType = task.types[0]
+      let from = task.from
+      let to = task.to
+      if(Property.types()[propertyType] === undefined) {
+        return Promise.reject(propertyType + " doesn't exist")
+      }else{
+        return this.findPropertiesInRangeByType(propertyType,from,to)
+        .then(array =>{
+          return this.remplaceEntityByOwner(array,empty_json)
+          .then(json => {
+            task.types.shift()
+            return this.getArrayResources(task,json)
+          })
+        })
+      }
+    }
+  }
+
+  /**
+   * @param {String} propertyType
+   * @param {int} from
+   * @param {int} to
+   * @returns {Array} array of object with property id and entity_id
+   */
+  findPropertiesInRangeByType(propertyType,from,to){
+      if(Property.types()[propertyType] === undefined) {
+        return Promise.reject(propertyType + " doesn't exist")
+      }else{
+        const n = Property.types()[propertyType].dimensions.length
+        let sql = "SELECT `id`, `entity_id` FROM `properties` p \n"
+        sql +=" LEFT JOIN d"+ n +" d ON d.`property_index_id` = `p`.`index_id`"
+        sql += " WHERE p.`type` = ? "
+        let data = [];
+        data.push(propertyType);
+        if (from !== undefined && to !== undefined) {
+          sql += "AND d.`timestamp` BETWEEN ? AND ? ORDER BY d.`timestamp`";
+          data.push(from);
+          data.push(to);
+        } else if (from !== undefined) {
+          sql += "AND d.`timestamp` >= ? ORDER BY d.`timestamp`";
+          data.push(from);
+        } else if (to !== undefined) {
+          sql += "AND d.`timestamp` <= ? ORDER BY d.`timestamp`";
+          data.push(to);
+        } else {
+          sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
+        }
+        return this.exec(sql, data).then(result => {
+          let array =[]
+          result.forEach(r => {
+            if (!(array.some(e => e.id === r.id))) {
+              /* array not contains the element we're looking for */
+              array.push(r)
+            }
+          })
+          return array
+        });
+      }
+  }
+
+  /**
+   * @param {String[][]} array Array of object property id and entity
+   * @param {Object} json
+   * @returns {Object} A json with persons id in keys and array of property id in values
+   */
+  remplaceEntityByOwner(array,json){
+    if(array.length === 0){
+      return Promise.resolve(json)
+    }
+    else{
+      let propertyId = array[0].id
+      let entityId = array[0].entity_id
+      return this.findOwner(entityId)
+      .then(personId=>{
+        if(json.hasOwnProperty(personId)){
+          json[personId].push(propertyId)
+        }else{
+          json[personId] = [propertyId]
+        }
+        array.shift()
+        return this.remplaceEntityByOwner(array,json)
+      })
+    }
+  }
+
+  /**
+   * @param {String} entityId
+   * @returns {String} personId (owner of the entityId)
+   */
+  findOwner(entityId){
+    let sql = "SELECT actor_entity_id FROM `entities_roles`\n" + " WHERE `subject_entity_id` = ? ";
+    const data = [entityId];
+    return this.exec(sql, data).then(result => {
+      if (result.length === 1) {
+        return Promise.resolve(result[0].actor_entity_id);
+      } else {
+        return Promise.reject({ code: 404, message: "Not Found" });
+      }
+    });
+  }
+
+  /**
+   * @param {Resource[]} resources
+   */
+  insertResources(resources,size = 0){
+    if(resources.length == 0){
+      return Promise.resolve(size)
+    }else{
+      size ++
+      let resource = resources[0]
+      return this.createResource(resource)
+      .then(()=>{
+        resources.shift()
+        return this.insertResources(resources,size)
+      })
+    }
+  }
+
+  /**
+   * @param {Resource} resource
+   */
+  createResource(resource){
+    const insert_resource = {
+      id: resource.id,
+      task_id: resource.taskId,
+      subject_entity_id : resource.subjectEntityId
+    };
+    const sql = "INSERT INTO `resources` SET ?";
+    return this.exec(sql, [insert_resource])
+    .then(() => {
+      const sql = "INSERT INTO `milestones` SET ?"
+      const first_milestone = resource.milestones[0]
+
+      const insert_milestone = {
+        resource_id :resource.id,
+        timestamp : first_milestone.timestamp,
+        shared_properties : first_milestone.shared_properties,
+        status : first_milestone.status
+      }
+      return this.exec(sql,[insert_milestone])
+    })
+  }
+
+  /**
+   *
+   * @param {String} personId
+   * @returns {Promise<Object>}
+   */
+  listTasks(personId){
+    return this.listActorTasks(personId)
+    .then(actor_tasks=>{
+      return this.listSubjectTasks(personId)
+      .then(subject_tasks => {
+        return Promise.resolve({
+          actor_tasks : actor_tasks,
+          subject_tasks : subject_tasks
+        })
+      })
+    })
+  }
+
+  /**
+   * @param actorEntityId
+   * @returns {Promise<Tasks[]>}
+   */
+  listActorTasks(actorEntityId) {
+    const sql =
+      "SELECT * FROM `tasks` \n" +
+      "  WHERE `actor_entity_id` = ?";
+    return this.exec(sql, actorEntityId).then(result => {
+      const tasks = [];
+      result.forEach(data => {
+        tasks.push(new Task(data));
+      });
+      return tasks
+    });
+  }
+
+    /**
+   * @param subjectEntityId
+   * @returns {Promise<Tasks[]>}
+   */
+  listSubjectTasks(subjectEntityId) {
+    const sql =
+    "SELECT t.`id`, t.`name`, t.`description`, t.`types`, t.`from`, t.`to`, t.`actor_entity_id`, t.`registered_at`  FROM `tasks` t\n" +
+      "   JOIN `resources` r ON t.`id`=r.`task_id`\n" +
+      "WHERE r.`subject_entity_id` = ?";
+    return this.exec(sql, [subjectEntityId]).then(result => {
+      const tasks = [];
+      result.forEach(data => {
+        tasks.push(new Task(data));
+      });
+      return tasks
+    });
+  }
+
+  /**
+   * @param {String} taskId
+   * @returns {Promise<Task>}
+   */
+  readTask(taskId) {
+    const sql = "SELECT * FROM `tasks`\n" + "WHERE `id` = ?";
+    return this.exec(sql, taskId).then(result => {
+      if (result.length === 1) {
+        return Promise.resolve(new Task(result[0]));
+      } else {
+        return Promise.reject({ code: 404, message: "Not Found" });
+      }
+    });
+  }
+
+  /**
+   * @param {String} taskId
+   * @returns {Promise}
+   */
+  deleteTask(taskId,actorEntityId) {
+    //From now we check if the actor_entity_id match for delete => not the good way ? => keto
+    const sql = "DELETE FROM `tasks` WHERE `id` = ? AND `actor_entity_id` = ?";
+    return this.exec(sql, [taskId,actorEntityId])
+    //Then delete ressource Then delete milestones ?
+  }
+
+  /**
+   *
+   * @param {String} taskId
+   * @param {String} actorEntityId
+   * @returns {Promise<Resource[]>}
+   */
+  readActorResources(taskId,actorEntityId){
+    const sql =
+      "SELECT r.`id`, r.`task_id`  FROM `resources` r\n" +
+      "   JOIN `tasks` t ON r.`task_id`= t.`id`\n" +
+      "WHERE t.`id` = ? AND t.`actor_entity_id` = ? ";
+    const data = [taskId, actorEntityId];
+    return this.exec(sql, data).then(result => {
+      return this.RecupMilestones(result)
+    });
+  }
+
+  /**
+   *
+   * @param {String} taskId
+   * @param {String} subjectEntityId
+   * @returns {Promise<Resource[]>}
+   */
+  readSubjectResources(taskId,subjectEntityId){
+    const sql =
+      "SELECT `id`, `task_id`  \n" +
+      "FROM `resources` \n" +
+      "WHERE `task_id` = ? AND `subject_entity_id` = ? ";
+    const data = [taskId, subjectEntityId];
+    return this.exec(sql, data).then(result => {
+      return this.RecupMilestones(result)
+    });
+  }
+
+  /**
+   * @param {Array} data array of object from the resources table
+   * @param {Array} resources empty array
+   * @returns {Promise<Resource[]>} ressources with milestones
+   */
+  RecupMilestones(data,resources = []){
+    if(data.length == 0){
+      return Promise.resolve(resources)
+    }else{
+      let resourceId = data[0].id
+      let taskId = data[0].task_id
+      return this.readMilestones(resourceId)
+      .then(result =>{
+        resources.push(new Resource(
+          taskId,
+          undefined,
+          result,
+          resourceId
+        ))
+          data.shift()
+        return this.RecupMilestones(data,resources)
+      })
+    }
+  }
+
+  /**
+   * @param {String} resourceId
+   * @returns {Array} array of object from table milestones
+   */
+  readMilestones(resourceId){
+    const sql = "SELECT `timestamp`, `shared_properties`,`status` FROM `milestones`\n" +
+    "WHERE `resource_id` = ? ORDER BY `timestamp`";
+    return this.exec(sql, resourceId).then(result => {
+      if (result.length > 0) {
+        return Promise.resolve(result);
+      } else {
+        return Promise.reject({ code: 404, message: "Not Found" });
+      }
+    });
+  }
+
+  /**
+   * @param {String} resourceId
+   * @param {String} subjectEntityId
+   * @returns {Boolean} the subject is th owner
+   */
+  checkSubject(resourceId,subjectEntityId){
+    let sql = "SELECT * FROM `resources`\n" + " WHERE `id` = ? AND `subject_entity_id` = ? ";
+    const data = [resourceId,subjectEntityId];
+    return this.exec(sql, data).then(result => {
+      if (result.length === 1) {
+        return Promise.resolve(true);
+      } else {
+        return Promise.reject({ code: 403, message: "Forbidden, your are not the owner of the resource" });
+      }
+    });
+  }
+
+  /**
+   * @param {Object} milestone
+   */
+  addMilestone(milestone){
+    const sql = "INSERT INTO `milestones` SET ?"
+      return this.exec(sql,[milestone])
+  }
+
+
 }
 
 module.exports = MySQL;
