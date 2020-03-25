@@ -135,7 +135,7 @@ class PersonService {
    * @param {Person} person
    */
   toKafka(person) {
-    this.model.kafka.pushData("persons", [person], person.id);
+    return this.model.kafka.pushData("persons", [person], person.id);
   }
 }
 

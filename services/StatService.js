@@ -35,8 +35,8 @@ class StatService {
         return Promise.reject(error);
       });
     } else {
-        from = (new Date(0)).getTime() // first ts
-        to = (new Date()).getTime() // now
+        from = (new Date(0)).getTime(); // first ts
+        to = (new Date()).getTime(); // now
         return this.model.dao.getTypesStats(propertyTypes, from, to)
         .catch(error => {
             return Promise.reject(error);

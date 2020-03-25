@@ -5,6 +5,11 @@
 ![NPM](https://img.shields.io/npm/l/@datacentricdesign/model)
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@datacentricdesign/model)
 
+# Developers
+
+When updating the model and testing it with an API locally (without publishing),
+use 'npm link' in the model and 'npm link @datacentricdesign/model' in the API.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

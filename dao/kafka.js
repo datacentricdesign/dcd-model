@@ -73,7 +73,7 @@ class Kafka {
           }
           msgCount++;
           if (msgCount >= 1000) {
-            this.sendToKafka(topic, messages);
+            this.sendToKafka(topic, messages).then(() => {});
             messages = [];
             msgCount = 0;
           }

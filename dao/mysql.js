@@ -770,7 +770,7 @@ class MySQL {
             things: num_things,
             properties: num_properties
           };
-          var types = Object.keys(Property.types());
+          const types = Object.keys(Property.types());
           return this.getGlobalTypesStats(types, json).then(result => {
             //console.log('getGlobalTypesStats',result)
             return Promise.resolve(result);
@@ -783,6 +783,7 @@ class MySQL {
   /**
    *
    * @param {String[]} types
+   * @param json
    * @returns {Promise<Object>}
    */
   getGlobalTypesStats(types, json) {
@@ -876,6 +877,8 @@ class MySQL {
 
   /**
    * @param {string} propertyType
+   * @param from
+   * @param to
    * @returns {Promise<number>}
    */
   countEntitiesInRangeByType(propertyType, from, to) {
@@ -1092,12 +1095,12 @@ class MySQL {
    * @param {Task} task
    */
   createResources(task){
-    let t = JSON.parse(JSON.stringify(task))
+    let t = JSON.parse(JSON.stringify(task));;
     return this.getArrayResources(t)
     .then(resources => {
       return this.insertResources(resources)
       .then(num_resources_created =>{
-        console.log(num_resources_created + " resources created")
+        console.log(num_resources_created + " resources created");;
         return Promise.resolve(num_resources_created)
       })
     })
@@ -1105,12 +1108,13 @@ class MySQL {
 
   /**
    * @param {Task} task
+   * @param empty_json
    * @returns {Promise<Resource[]>} Array of resources of a task in the DB
    */
   getArrayResources(task, empty_json = {}){
     if(task.types.length === 0){
-      let person_ids = Object.keys(empty_json)
-      let resources = []
+      let person_ids = Object.keys(empty_json);
+      let resources = [];
       person_ids.forEach(person_id => {
 
         let milestones = [
@@ -1119,19 +1123,19 @@ class MySQL {
             shared_properties : empty_json[person_id].join(),
             status : "unread"
           }
-        ]
+        ];
 
         resources.push(new Resource(
           task.id,
           person_id,
           milestones
           ))
-      })
+      });
       return Promise.resolve(resources);
     }else{
-      let propertyType = task.types[0]
-      let from = task.from
-      let to = task.to
+      let propertyType = task.types[0];
+      let from = task.from;
+      let to = task.to;
       if(Property.types()[propertyType] === undefined) {
         return Promise.reject(propertyType + " doesn't exist")
       }else{
@@ -1139,7 +1143,7 @@ class MySQL {
         .then(array =>{
           return this.remplaceEntityByOwner(array,empty_json)
           .then(json => {
-            task.types.shift()
+            task.types.shift();
             return this.getArrayResources(task,json)
           })
         })
@@ -1157,10 +1161,10 @@ class MySQL {
       if(Property.types()[propertyType] === undefined) {
         return Promise.reject(propertyType + " doesn't exist")
       }else{
-        const n = Property.types()[propertyType].dimensions.length
-        let sql = "SELECT `id`, `entity_id` FROM `properties` p \n"
-        sql +=" LEFT JOIN d"+ n +" d ON d.`property_index_id` = `p`.`index_id`"
-        sql += " WHERE p.`type` = ? "
+        const n = Property.types()[propertyType].dimensions.length;
+        let sql = "SELECT `id`, `entity_id` FROM `properties` p \n";
+        sql +=" LEFT JOIN d"+ n +" d ON d.`property_index_id` = `p`.`index_id`";
+        sql += " WHERE p.`type` = ? ";
         let data = [];
         data.push(propertyType);
         if (from !== undefined && to !== undefined) {
@@ -1177,13 +1181,13 @@ class MySQL {
           sql += "ORDER BY d.`timestamp` DESC LIMIT 1";
         }
         return this.exec(sql, data).then(result => {
-          let array =[]
+          let array =[];
           result.forEach(r => {
             if (!(array.some(e => e.id === r.id))) {
               /* array not contains the element we're looking for */
               array.push(r)
             }
-          })
+          });
           return array
         });
       }
@@ -1199,8 +1203,8 @@ class MySQL {
       return Promise.resolve(json)
     }
     else{
-      let propertyId = array[0].id
-      let entityId = array[0].entity_id
+      let propertyId = array[0].id;
+      let entityId = array[0].entity_id;
       return this.findOwner(entityId)
       .then(personId=>{
         if(json.hasOwnProperty(personId)){
@@ -1208,7 +1212,7 @@ class MySQL {
         }else{
           json[personId] = [propertyId]
         }
-        array.shift()
+        array.shift();
         return this.remplaceEntityByOwner(array,json)
       })
     }
@@ -1232,16 +1236,17 @@ class MySQL {
 
   /**
    * @param {Resource[]} resources
+   * @param size
    */
-  insertResources(resources,size = 0){
-    if(resources.length == 0){
+  insertResources(resources, size = 0){
+    if(resources.length === 0){
       return Promise.resolve(size)
-    }else{
-      size ++
-      let resource = resources[0]
+    } else {
+      size ++;
+      let resource = resources[0];
       return this.createResource(resource)
       .then(()=>{
-        resources.shift()
+        resources.shift();
         return this.insertResources(resources,size)
       })
     }
@@ -1259,15 +1264,15 @@ class MySQL {
     const sql = "INSERT INTO `resources` SET ?";
     return this.exec(sql, [insert_resource])
     .then(() => {
-      const sql = "INSERT INTO `milestones` SET ?"
-      const first_milestone = resource.milestones[0]
+      const sql = "INSERT INTO `milestones` SET ?";
+      const first_milestone = resource.milestones[0];
 
       const insert_milestone = {
         resource_id :resource.id,
         timestamp : first_milestone.timestamp,
         shared_properties : first_milestone.shared_properties,
         status : first_milestone.status
-      }
+      };
       return this.exec(sql,[insert_milestone])
     })
   }
@@ -1342,9 +1347,10 @@ class MySQL {
 
   /**
    * @param {String} taskId
+   * @param actorEntityId
    * @returns {Promise}
    */
-  deleteTask(taskId,actorEntityId) {
+  deleteTask(taskId, actorEntityId) {
     //From now we check if the actor_entity_id match for delete => not the good way ? => keto
     const sql = "DELETE FROM `tasks` WHERE `id` = ? AND `actor_entity_id` = ?";
     return this.exec(sql, [taskId,actorEntityId])
@@ -1391,11 +1397,11 @@ class MySQL {
    * @returns {Promise<Resource[]>} ressources with milestones
    */
   RecupMilestones(data,resources = []){
-    if(data.length == 0){
+    if(data.length === 0){
       return Promise.resolve(resources)
-    }else{
-      let resourceId = data[0].id
-      let taskId = data[0].task_id
+    } else {
+      let resourceId = data[0].id;
+      let taskId = data[0].task_id;
       return this.readMilestones(resourceId)
       .then(result =>{
         resources.push(new Resource(
@@ -1403,8 +1409,8 @@ class MySQL {
           undefined,
           result,
           resourceId
-        ))
-          data.shift()
+        ));
+          data.shift();
         return this.RecupMilestones(data,resources)
       })
     }
@@ -1447,7 +1453,7 @@ class MySQL {
    * @param {Object} milestone
    */
   addMilestone(milestone){
-    const sql = "INSERT INTO `milestones` SET ?"
+    const sql = "INSERT INTO `milestones` SET ?";
       return this.exec(sql,[milestone])
   }
 

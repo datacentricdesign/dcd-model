@@ -339,10 +339,10 @@ const testValues = [
     -0.06167660653591156,
     -0.19948981702327728
   ][
-    (1570467349596,
+    1570467349596,
     0.06406598538160324,
     -0.06137761101126671,
-    -0.20296789705753326)
+    -0.20296789705753326
   ],
   [
     1570467349727,
@@ -16481,6 +16481,7 @@ const testValues = [
 const InfluxDB = require("../dao/influxdb");
 const Thing = require("../entities/Thing");
 const Property = require("../entities/Property");
+const describe = require("mocha");
 
 describe("createThing()", () => {
   before(function() {
@@ -16517,7 +16518,7 @@ describe("createThing()", () => {
     this.influx.createValues(property).catch(error => {
       console.log(error);
     });
-    return new Promise(resolve => {
+    return new Promise(() => {
       return setTimeout(() => {
         return this.influx
           .readPropertyValues(

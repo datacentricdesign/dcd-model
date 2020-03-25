@@ -23,7 +23,7 @@ class Task {
         id,
     ){
         if (typeof name === "object") {
-            const task = name
+            const task = name;
             this.id = task.id !== undefined ? task.id : idGen.toID(task.name);
             this.name = task.name !== undefined ? task.name : "";
             this.description = task.description !== undefined ? task.description : "";

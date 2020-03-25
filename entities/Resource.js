@@ -6,8 +6,8 @@ class Resource {
 
     constructor(task_id,subjectEntityId, milestones = [],id = undefined){
         this.id = id !== undefined ? id : idGen.uuidv4();
-        this.taskId = task_id
-        this.subjectEntityId = subjectEntityId
+        this.taskId = task_id;
+        this.subjectEntityId = subjectEntityId;
         this.readAt = Date.now();
         this.milestones = milestones
     }

@@ -145,8 +145,9 @@ class InteractionService {
 
 /**
  * Generate an access policy for a thing.
- * @param thingId
- * @returns {Promise<>}
+ * @param interactionId
+ * @param thingId1
+ * @param thingId2
  */
 function createAccessPolicy(interactionId, thingId1, thingId2) {
   const thingPolicy = {
