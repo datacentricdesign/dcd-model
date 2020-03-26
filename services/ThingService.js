@@ -6,7 +6,7 @@ const logger = log4js.getLogger("[dcd:things]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
 const idGen = require("../lib/id");
-const DCDError = require("../lib/Error");
+const DCDError = require("../lib/DCDError");
 
 class ThingService {
   /**

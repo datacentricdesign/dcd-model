@@ -6,7 +6,7 @@ const logger = log4js.getLogger("[dcd:persons]");
 logger.level = process.env.LOG_LEVEL || "INFO";
 
 const Person = require("../entities/Person");
-const DCDError = require("../lib/Error");
+const DCDError = require("../lib/DCDError");
 
 class PersonService {
   /**

@@ -1,6 +1,6 @@
 "use strict";
 
-const DCDError = require("../lib/Error");
+const DCDError = require("../lib/DCDError");
 
 const cryptoAlgo = process.env.CRYPTO_ALGO || "sha256";
 const cryptoKey = process.env.CRYPTO_KEY;

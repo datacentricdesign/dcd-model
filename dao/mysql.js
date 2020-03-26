@@ -15,7 +15,7 @@ const Class = require("../entities/Class");
 const Task = require("../entities/Task");
 const Resource = require("../entities/Resource");
 
-const DCDError = require("../lib/Error");
+const DCDError = require("../lib/DCDError");
 
 class MySQL {
   /**

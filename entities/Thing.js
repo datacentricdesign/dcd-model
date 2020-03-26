@@ -1,7 +1,7 @@
 "use strict";
 
 const idGen = require("../lib/id");
-const DCDError = require("../lib/Error");
+const DCDError = require("../lib/DCDError");
 
 /**
  * A Thing represents a physical or virtual component collecting data.
