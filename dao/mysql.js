@@ -402,7 +402,7 @@ class MySQL {
     const sql =
       "SELECT p.`id` AS 'id', `name`  \n" +
       "FROM `persons` p\n" +
-      "   JOIN `roles` r ON p.`id`=r.`subject_entity_id`\n" +
+      "   JOIN `entities_roles` r ON p.`id`=r.`subject_entity_id`\n" +
       "WHERE r.`actor_entity_id` = ?";
     return this.exec(sql, [actorEntityId]).then(result => {
       const persons = [];
@@ -421,7 +421,7 @@ class MySQL {
     const sql =
       "SELECT t.`id` AS 'id', `name`, `description`, `type` \n" +
       "FROM `things` t\n" +
-      "   JOIN `roles` r ON t.`id`=r.`subject_entity_id`\n" +
+      "   JOIN `entities_roles` r ON t.`id`=r.`subject_entity_id`\n" +
       "WHERE r.`actor_entity_id` = ?";
     return this.exec(sql, actorEntityId).then(result => {
       const things = [];
@@ -515,7 +515,7 @@ class MySQL {
     let sql =
       "SELECT `interactions`.`id` AS 'id', `entity_id_1`, `entity_id_2` \n" +
       "FROM `interactions` i\n" +
-      "   JOIN `roles` er\n" +
+      "   JOIN `entities_roles` er\n" +
       "       ON (i.`entity_id_1`=er.`subject_entity_id` " +
       "          OR i.`entity_id_2`=er.`subject_entity_id`)\n" +
       " WHERE er.`actor_entity_id` = ?\n" +
@@ -698,7 +698,7 @@ class MySQL {
   }
 
   createRole(actorId, subjectId, roleName) {
-    const sql = "INSERT IGNORE INTO `roles` SET ?";
+    const sql = "INSERT IGNORE INTO `entities_roles` SET ?";
     const insert = {
       actor_entity_id: actorId,
       subject_entity_id: subjectId,
@@ -709,14 +709,14 @@ class MySQL {
 
   deleteRole(actorId, subjectId, roleName) {
     const sql =
-      "DELETE FROM `roles` \n" +
+      "DELETE FROM `entities_roles` \n" +
       "WHERE `actor_entity_id` = ? AND `subject_entity_id` = ? AND `role` = ?";
     return this.exec(sql, [actorId, subjectId, roleName]);
   }
 
   readRoleId(actorId, subjectId, roleName) {
     const sql =
-      "SELECT `id`  FROM `roles` \n" +
+      "SELECT `id`  FROM `entities_roles` \n" +
       "WHERE `actor_entity_id` = ? AND `subject_entity_id` = ? AND `role` = ?";
     return this.exec(sql, [actorId, subjectId, roleName]);
   }
