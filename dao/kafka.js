@@ -56,7 +56,7 @@ class Kafka {
         logger.error(error);
       });
     } else {
-      logger.error("Kafka is disabled");
+      logger.warn("Kafka is disabled");
     }
   }
 
