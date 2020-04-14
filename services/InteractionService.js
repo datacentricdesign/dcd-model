@@ -33,7 +33,7 @@ class InteractionService {
       })
       .catch(error => {
         // Read negative, the interaction does not exist yet
-        if (error.code === 404) {
+        if (error.errorCode === 404) {
           logger.debug(
             "create: Interaction does not exist, sending it to Kafka"
           );

@@ -46,7 +46,7 @@ class PersonService {
         })
         // Read negative, the Thing does not exist yet
         .catch(error => {
-          if (error.code === 404) {
+          if (error.errorCode === 404) {
             return this.model.dao
               .createPerson(person)
               .then(() => {

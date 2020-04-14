@@ -46,7 +46,7 @@ class ThingService {
       })
       .catch(error => {
         // Read negative, the Thing does not exist yet
-        if (error.code === 404) {
+        if (error.errorCode === 404) {
           logger.debug(
             "create: Thing does not exist, " +
               "sending it to Kafka and creating ACPs"
