@@ -82,9 +82,12 @@ class Kafka {
           return this.sendToKafka(topic, messages);
         }
       }
-      return Promise.reject(new DCDError(500, "Kafka producer not ready."));
+      logger.debug(new DCDError(500, "Kafka producer not ready."));
+      return Promise.resolve();
+    } else {
+      logger.debug(new DCDError(500, "Kafka not enabled."));
+      return Promise.resolve();
     }
-    return Promise.reject(new DCDError(500, "Kafka not enabled."));
   }
 
   setConsumer(topics, options, onMessage) {

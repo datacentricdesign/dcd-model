@@ -1,6 +1,6 @@
 {
   "name": "@datacentricdesign/model",
-  "version": "0.1.8-dev1",
+  "version": "0.1.8-dev2",
   "description": "Model of the Data-Centric-Design Hub",
   "main": "index.js",
   "scripts": {
