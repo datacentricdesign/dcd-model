@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-const idGen = require("../lib/id");
-const DCDError = require("../lib/DCDError");
+const idGen = require('../lib/id')
+const DCDError = require('../lib/DCDError')
 
 /**
  * A Thing represents a physical or virtual component collecting data.
@@ -17,46 +17,46 @@ class Thing {
    * @param {Array<Property>} properties
    * @param {string} id A unique identifier, automatically generated if missing.
    */
-  constructor(name = "", description = "", type = "", properties = [], id) {
-    if (typeof name === "object") {
-      const thing = name;
-      this.id = thing.id !== undefined ? thing.id : idGen.toID(thing.name);
-      this.name = thing.name !== undefined ? thing.name : "";
+  constructor (name = '', description = '', type = '', properties = [], id) {
+    if (typeof name === 'object') {
+      const thing = name
+      this.id = thing.id !== undefined ? thing.id : idGen.toID(thing.name)
+      this.name = thing.name !== undefined ? thing.name : ''
       this.description =
-        thing.description !== undefined ? thing.description : "";
-      this.type = thing.type !== undefined ? thing.type : "";
-      this.properties = thing.properties !== undefined ? thing.properties : [];
+        thing.description !== undefined ? thing.description : ''
+      this.type = thing.type !== undefined ? thing.type : ''
+      this.properties = thing.properties !== undefined ? thing.properties : []
       if (thing.registered_at !== undefined) {
-        this.registeredAt = thing.registered_at;
+        this.registeredAt = thing.registered_at
       }
       if (thing.pem !== undefined) {
-        this.pem = thing.pem;
+        this.pem = thing.pem
       }
     } else {
-      this.id = id !== undefined ? id : idGen.toID(name);
-      this.name = name;
-      this.description = description;
-      this.type = type;
-      this.properties = properties;
+      this.id = id !== undefined ? id : idGen.toID(name)
+      this.name = name
+      this.description = description
+      this.type = type
+      this.properties = properties
     }
 
-    if (!this.id.startsWith("dcd:things:")) {
-      this.id = "dcd:things:" + this.id;
+    if (!this.id.startsWith('dcd:things:')) {
+      this.id = 'dcd:things:' + this.id
     }
 
-    this.readAt = Date.now();
-    this.keys = {};
+    this.readAt = Date.now()
+    this.keys = {}
   }
 
-  findPropertyByName(name) {
+  findPropertyByName (name) {
     for (let key in this.properties) {
-      const property = this.properties[key];
+      const property = this.properties[key]
       if (property.name === name) {
-        return property;
+        return property
       }
     }
-    throw new DCDError(404, "Property with name " + name + " not found");
+    throw new DCDError(404, 'Property with name ' + name + ' not found')
   }
 }
 
-module.exports = Thing;
+module.exports = Thing

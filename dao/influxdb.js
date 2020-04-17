@@ -1,76 +1,76 @@
-"use strict";
+'use strict'
 
 // Setting the logs
-const log4js = require("log4js");
-const logger = log4js.getLogger("[lib:influx]");
-logger.level = process.env.LOG_LEVEL || "INFO";
+const log4js = require('log4js')
+const logger = log4js.getLogger('[lib:influx]')
+logger.level = process.env.LOG_LEVEL || 'INFO'
 
-const Influx = require("influx");
+const Influx = require('influx')
 
-const propertyMap = {};
+const propertyMap = {}
 
 class InfluxDB {
   /**
    * @param {String} host         Host of InfluxDB server
    * @param {String} database     Name of the database
    */
-  constructor(host, database) {
-    this.host = host;
-    this.dbName = database;
+  constructor (host, database) {
+    this.host = host
+    this.dbName = database
     this.influx = new Influx.InfluxDB({
       host: host,
       database: database,
       schema: schema
-    });
+    })
   }
 
   /**
    * Create the Influx database
    * @return {Promise<any>}
    */
-  createStore() {
-    logger.debug("create store");
-    const query = `CREATE DATABASE ${this.dbName}`;
-    return this.influx.queryRaw(query);
+  createStore () {
+    logger.debug('create store')
+    const query = `CREATE DATABASE ${this.dbName}`
+    return this.influx.queryRaw(query)
   }
 
   /**
    * Delete the Influx database
    * @return {Promise<any>}
    */
-  deleteStore() {
-    const query = `DROP DATABASE ${this.dbName}`;
-    return this.influx.queryRaw(query);
+  deleteStore () {
+    const query = `DROP DATABASE ${this.dbName}`
+    return this.influx.queryRaw(query)
   }
 
   /**
    * @param {Thing[]} things
    */
-  createThings(things) {
-    return this.influx.writePoints(thingsToPoints(things));
+  createThings (things) {
+    return this.influx.writePoints(thingsToPoints(things))
   }
 
   /**
    * @param {String} entityId
    * @param {Property[]} properties
    */
-  createProperties(entityId, properties) {
+  createProperties (entityId, properties) {
     properties.forEach(property => {
-      propertyMap[entityId + "_" + property.id] = property;
-    });
-    return this.influx.writePoints(propertiesToPoints(properties));
+      propertyMap[entityId + '_' + property.id] = property
+    })
+    return this.influx.writePoints(propertiesToPoints(properties))
   }
 
   /**
    * @param {Property} property
    */
-  createValues(property) {
+  createValues (property) {
     if (property.values.length > 0) {
-      const points = valuesToPoints(property);
+      const points = valuesToPoints(property)
       return this.influx.writePoints(points, {
-        precision: "ms",
+        precision: 'ms',
         database: this.dbName
-      });
+      })
     }
   }
 
@@ -84,37 +84,37 @@ class InfluxDB {
    * @param {string} fill
    * @return {Promise<any>}
    */
-  readPropertyValues(
+  readPropertyValues (
     property,
     from = undefined,
     to = undefined,
     timeInterval = undefined,
-    fctInterval = "MEAN",
-    fill = "none"
+    fctInterval = 'MEAN',
+    fill = 'none'
   ) {
-    let query = `SELECT time`;
+    let query = `SELECT time`
     for (let index in property.dimensions) {
       if (timeInterval !== undefined) {
-        query += `, ${fctInterval}(${property.dimensions[index].name})`;
+        query += `, ${fctInterval}(${property.dimensions[index].name})`
       } else {
-        query += `, ${property.dimensions[index].name} `;
+        query += `, ${property.dimensions[index].name} `
       }
     }
-    query += ` FROM "${property.type}"`;
+    query += ` FROM "${property.type}"`
 
     if (from !== undefined && to !== undefined) {
-      const start = new Date(from).toISOString();
-      const end = new Date(to).toISOString();
-      query += ` WHERE time >= '${start}' AND time <= '${end}' AND "entity_id" = '${property.entityId}' AND "property_id" = '${property.id}'`;
+      const start = new Date(from).toISOString()
+      const end = new Date(to).toISOString()
+      query += ` WHERE time >= '${start}' AND time <= '${end}' AND "entity_id" = '${property.entityId}' AND "property_id" = '${property.id}'`
     }
 
     if (timeInterval !== undefined) {
-      query += ` GROUP BY time(${timeInterval}) fill(${fill})`;
+      query += ` GROUP BY time(${timeInterval}) fill(${fill})`
     }
 
     return this.influx
       .queryRaw(query, {
-        precision: "ms",
+        precision: 'ms',
         database: this.dbName
       })
       .then(data => {
@@ -123,12 +123,12 @@ class InfluxDB {
           data.results[0].series !== undefined &&
           data.results[0].series.length > 0
         ) {
-          property.values = data.results[0].series[0].values;
+          property.values = data.results[0].series[0].values
         } else {
-          property.values = [];
+          property.values = []
         }
-        return Promise.resolve(property);
-      });
+        return Promise.resolve(property)
+      })
   }
 }
 
@@ -136,11 +136,11 @@ class InfluxDB {
  * @param {Thing[]} things
  * @returns {Array}
  */
-function thingsToPoints(things) {
-  const points = [];
+function thingsToPoints (things) {
+  const points = []
   things.forEach(thing => {
     const point = {
-      measurement: "thing",
+      measurement: 'thing',
       tags: {},
       fields: {
         id: thing.id,
@@ -148,21 +148,21 @@ function thingsToPoints(things) {
         description: thing.description,
         type: thing.type
       }
-    };
-    points.push(point);
-  });
-  return points;
+    }
+    points.push(point)
+  })
+  return points
 }
 
 /**
  * @param {Property[]} properties
  * @returns {Array}
  */
-function propertiesToPoints(properties) {
-  const points = [];
+function propertiesToPoints (properties) {
+  const points = []
   properties.forEach(property => {
     const point = {
-      measurement: "property",
+      measurement: 'property',
       tags: {},
       fields: {
         id: property.id,
@@ -171,37 +171,37 @@ function propertiesToPoints(properties) {
         type: property.type,
         entityId: property.entityId
       }
-    };
-    points.push(point);
-  });
-  return points;
+    }
+    points.push(point)
+  })
+  return points
 }
 
 /**
  * @param {Property} property
  * @returns {IPoint[]}
  */
-function valuesToPoints(property) {
-  let ts;
-  const points = [];
-  const dimensions = property.dimensions;
+function valuesToPoints (property) {
+  let ts
+  const points = []
+  const dimensions = property.dimensions
   for (let index = 0; index < property.values.length; index++) {
     if (property.values[index] !== undefined) {
-      const values = property.values[index];
+      const values = property.values[index]
       if (
         values.length - 1 === dimensions.length ||
         values.length === dimensions.length
       ) {
         if (values.length === dimensions.length) {
           // missing time, take from server
-          ts = Date.now();
+          ts = Date.now()
         } else {
-          ts = values.shift();
+          ts = values.shift()
         }
-        const fields = {};
+        const fields = {}
         for (let i = 0; i < values.length; i++) {
-          const name = dimensions[i].name;
-          fields[name] = values[i];
+          const name = dimensions[i].name
+          fields[name] = values[i]
         }
         points.push({
           measurement: property.type,
@@ -211,16 +211,16 @@ function valuesToPoints(property) {
           },
           fields: fields,
           timestamp: ts
-        });
+        })
       }
     }
   }
-  return points;
+  return points
 }
 
 const schema = [
   {
-    measurement: "person",
+    measurement: 'person',
     fields: {
       id: Influx.FieldType.STRING,
       name: Influx.FieldType.STRING
@@ -228,17 +228,17 @@ const schema = [
     tags: []
   },
   {
-    measurement: "thing",
+    measurement: 'thing',
     fields: {
       id: Influx.FieldType.STRING,
       name: Influx.FieldType.STRING,
       description: Influx.FieldType.STRING,
       type: Influx.FieldType.STRING
     },
-    tags: ["person_id"]
+    tags: ['person_id']
   },
   {
-    measurement: "property",
+    measurement: 'property',
     fields: {
       id: Influx.FieldType.STRING,
       name: Influx.FieldType.STRING,
@@ -246,243 +246,243 @@ const schema = [
       type: Influx.FieldType.STRING,
       entityId: Influx.FieldType.STRING
     },
-    tags: ["entity_id"]
+    tags: ['entity_id']
   },
   {
-    measurement: "TEXT",
+    measurement: 'TEXT',
     fields: {
       Value1: Influx.FieldType.STRING
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "ACCELEROMETER",
+    measurement: 'ACCELEROMETER',
     fields: {
       x: Influx.FieldType.FLOAT,
       y: Influx.FieldType.FLOAT,
       z: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "GYROSCOPE",
+    measurement: 'GYROSCOPE',
     fields: {
       x: Influx.FieldType.FLOAT,
       y: Influx.FieldType.FLOAT,
       z: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "BINARY",
+    measurement: 'BINARY',
     fields: {
       Binary: Influx.FieldType.BOOLEAN
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "MAGNETIC_FIELD",
+    measurement: 'MAGNETIC_FIELD',
     fields: {
       x: Influx.FieldType.FLOAT,
       y: Influx.FieldType.FLOAT,
       z: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "GRAVITY",
+    measurement: 'GRAVITY',
     fields: {
       x: Influx.FieldType.FLOAT,
       y: Influx.FieldType.FLOAT,
       z: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "ROTATION_VECTOR",
+    measurement: 'ROTATION_VECTOR',
     fields: {
       x: Influx.FieldType.FLOAT,
       y: Influx.FieldType.FLOAT,
       z: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "EULER_ANGLE",
+    measurement: 'EULER_ANGLE',
     fields: {
       x: Influx.FieldType.FLOAT,
       y: Influx.FieldType.FLOAT,
       z: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "LIGHT",
+    measurement: 'LIGHT',
     fields: {
       Illuminance: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "LOCATION",
+    measurement: 'LOCATION',
     fields: {
       Longitude: Influx.FieldType.FLOAT,
       Latitude: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "ALTITUDE",
+    measurement: 'ALTITUDE',
     fields: {
       Altitude: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "BEARING",
+    measurement: 'BEARING',
     fields: {
       Bearing: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "SPEED",
+    measurement: 'SPEED',
     fields: {
       Speed: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "PRESSURE",
+    measurement: 'PRESSURE',
     fields: {
       Pressure: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "PROXIMITY",
+    measurement: 'PROXIMITY',
     fields: {
       Proximity: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "RELATIVE_HUMIDITY",
+    measurement: 'RELATIVE_HUMIDITY',
     fields: {
-      "Relative humidity": Influx.FieldType.FLOAT
+      'Relative humidity': Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "COUNT",
+    measurement: 'COUNT',
     fields: {
       Count: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "FORCE",
+    measurement: 'FORCE',
     fields: {
       Force: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "TEMPERATURE",
+    measurement: 'TEMPERATURE',
     fields: {
       Temperature: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "State",
+    measurement: 'State',
     fields: {
       State: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "CLASS",
+    measurement: 'CLASS',
     fields: {
       Class: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "VIDEO",
+    measurement: 'VIDEO',
     fields: {
       Duration: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "AUDIO",
+    measurement: 'AUDIO',
     fields: {
       Duration: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "PICTURE",
+    measurement: 'PICTURE',
     fields: {
       x: Influx.FieldType.FLOAT,
       y: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "HEART_RATE",
+    measurement: 'HEART_RATE',
     fields: {
-      "Hear rate": Influx.FieldType.FLOAT,
-      "RR-Interval": Influx.FieldType.FLOAT
+      'Hear rate': Influx.FieldType.FLOAT,
+      'RR-Interval': Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "WIFI",
+    measurement: 'WIFI',
     fields: {
-      "Session Duration": Influx.FieldType.FLOAT,
+      'Session Duration': Influx.FieldType.FLOAT,
       RSSI: Influx.FieldType.FLOAT,
       SNR: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "ONE_DIMENSION",
+    measurement: 'ONE_DIMENSION',
     fields: {
       Value1: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "TWO_DIMENSIONS",
+    measurement: 'TWO_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "THREE_DIMENSIONS",
+    measurement: 'THREE_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
       Value3: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "FOUR_DIMENSIONS",
+    measurement: 'FOUR_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
       Value3: Influx.FieldType.FLOAT,
       Value4: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "FIVE_DIMENSIONS",
+    measurement: 'FIVE_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -490,10 +490,10 @@ const schema = [
       Value4: Influx.FieldType.FLOAT,
       Value5: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "SIX_DIMENSIONS",
+    measurement: 'SIX_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -502,10 +502,10 @@ const schema = [
       Value5: Influx.FieldType.FLOAT,
       Value6: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "SEVEN_DIMENSIONS",
+    measurement: 'SEVEN_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -515,10 +515,10 @@ const schema = [
       Value6: Influx.FieldType.FLOAT,
       Value7: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "EIGHT_DIMENSIONS",
+    measurement: 'EIGHT_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -529,10 +529,10 @@ const schema = [
       Value7: Influx.FieldType.FLOAT,
       Value8: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "NINE_DIMENSIONS",
+    measurement: 'NINE_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -544,10 +544,10 @@ const schema = [
       Value8: Influx.FieldType.FLOAT,
       Value9: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "TEN_DIMENSIONS",
+    measurement: 'TEN_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -560,10 +560,10 @@ const schema = [
       Value9: Influx.FieldType.FLOAT,
       Value10: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "ELEVEN_DIMENSIONS",
+    measurement: 'ELEVEN_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -577,10 +577,10 @@ const schema = [
       Value10: Influx.FieldType.FLOAT,
       Value11: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "TWELVE_DIMENSIONS",
+    measurement: 'TWELVE_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -595,10 +595,10 @@ const schema = [
       Value11: Influx.FieldType.FLOAT,
       Value12: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "THIRTEEN_DIMENSIONS",
+    measurement: 'THIRTEEN_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -614,10 +614,10 @@ const schema = [
       Value12: Influx.FieldType.FLOAT,
       Value13: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "FOURTEEN_DIMENSIONS",
+    measurement: 'FOURTEEN_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -634,10 +634,10 @@ const schema = [
       Value13: Influx.FieldType.FLOAT,
       Value14: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   },
   {
-    measurement: "FIFTEEN_DIMENSIONS",
+    measurement: 'FIFTEEN_DIMENSIONS',
     fields: {
       Value1: Influx.FieldType.FLOAT,
       Value2: Influx.FieldType.FLOAT,
@@ -655,8 +655,8 @@ const schema = [
       Value14: Influx.FieldType.FLOAT,
       Value15: Influx.FieldType.FLOAT
     },
-    tags: ["entity_id", "property_id"]
+    tags: ['entity_id', 'property_id']
   }
-];
+]
 
-module.exports = InfluxDB;
+module.exports = InfluxDB

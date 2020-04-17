@@ -54,3 +54,7 @@ jspm_packages/
 
 .idea
 *.iml
+
+.nyc_output
+coverage
+.codacy-coverage

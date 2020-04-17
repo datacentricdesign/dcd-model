@@ -1,0 +1,6 @@
+!.eslintrc.json
+documentation/
+build/
+.nyc_output/
+coverage
+.idea

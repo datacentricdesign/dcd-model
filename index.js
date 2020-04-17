@@ -58,6 +58,12 @@ class DCDModel {
     this.tasks = new TaskService(this);
     this.stats = new StatService(this);
   }
+
+  shutdown() {
+    this.dao.disconnect();
+
+    this.kafka.disconnect();
+  }
 }
 
 module.exports = DCDModel;

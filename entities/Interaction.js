@@ -1,6 +1,6 @@
-"use strict";
+'use strict'
 
-const idGen = require("../lib/id");
+const idGen = require('../lib/id')
 
 class Interaction {
   /**
@@ -10,25 +10,25 @@ class Interaction {
    * @param properties
    * @param id
    */
-  constructor(type = "", entityId1, entityId2, properties = [], id) {
-    if (typeof type === "object") {
-      const interaction = type;
-      this.id = interaction.id;
+  constructor (type = '', entityId1, entityId2, properties = [], id) {
+    if (typeof type === 'object') {
+      const interaction = type
+      this.id = interaction.id
       this.entityId1 =
-        interaction.entity_id_1 !== undefined ? interaction.entity_id_1 : "";
+        interaction.entity_id_1 !== undefined ? interaction.entity_id_1 : ''
       this.entityId2 =
-        interaction.entity_id_2 !== undefined ? interaction.entity_id_2 : "";
+        interaction.entity_id_2 !== undefined ? interaction.entity_id_2 : ''
       this.properties =
-        interaction.properties !== undefined ? interaction.properties : [];
+        interaction.properties !== undefined ? interaction.properties : []
     } else {
-      this.id = id !== undefined ? id : idGen.uuidv4();
-      this.type = type;
-      this.entityId1 = entityId1;
-      this.entityId2 = entityId2;
-      this.properties = properties;
+      this.id = id !== undefined ? id : idGen.uuidv4()
+      this.type = type
+      this.entityId1 = entityId1
+      this.entityId2 = entityId2
+      this.properties = properties
     }
-    this.readAt = Date.now();
+    this.readAt = Date.now()
   }
 }
 
-module.exports = Interaction;
+module.exports = Interaction

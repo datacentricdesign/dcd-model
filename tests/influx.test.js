@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 
 const testValues = [
   [1570467145138, 0.4263432025909424, 0.5219055414199829, 0.4892355799674988],
@@ -340,10 +340,10 @@ const testValues = [
     -0.19948981702327728
   ][
     1570467349596,
-    0.06406598538160324,
-    -0.06137761101126671,
-    -0.20296789705753326
-  ],
+      0.06406598538160324,
+      -0.06137761101126671,
+      -0.20296789705753326
+    ],
   [
     1570467349727,
     0.0862610936164856,
@@ -16476,30 +16476,29 @@ const testValues = [
     -0.007055021822452545,
     -0.1889365315437317
   ]
-];
+]
 
-const InfluxDB = require("../dao/influxdb");
-const Thing = require("../entities/Thing");
-const Property = require("../entities/Property");
-const describe = require("mocha");
+const InfluxDB = require('../dao/influxdb')
+const Thing = require('../entities/Thing')
+const Property = require('../entities/Property')
 
-describe("createThing()", () => {
-  before(function() {
+describe('createThing()', function() {
+  before(function () {
     // runs before all tests in this block
-    this.influx = new InfluxDB("localhost", "dcdhub");
+    this.influx = new InfluxDB('localhost', 'dcdhub')
 
     this.influx.createStore().catch(error => {
-      console.log(error);
-    });
-  });
+      console.log(error)
+    })
+  })
 
-  const thing = new Thing("test-thing", "desc test thing", "test");
+  const thing = new Thing('test-thing', 'desc test thing', 'test')
   const property = new Property(
-    "test-property",
-    "desc test property",
-    "THREE_DIMENSIONS"
-  );
-  property.entityId = thing.id;
+    'test-property',
+    'desc test property',
+    'THREE_DIMENSIONS'
+  )
+  property.entityId = thing.id
   // it("Create Things", function() {
   //   this.influx.createThings([thing]).catch(error => {
   //     console.log(error);
@@ -16512,12 +16511,12 @@ describe("createThing()", () => {
   //   });
   // });
 
-  it("Create and get values", function() {
-    this.timeout(10000);
-    property.values = testValues;
+  it('Create and get values', function () {
+    this.timeout(10000)
+    property.values = testValues
     this.influx.createValues(property).catch(error => {
-      console.log(error);
-    });
+      console.log(error)
+    })
     return new Promise(() => {
       return setTimeout(() => {
         return this.influx
@@ -16525,26 +16524,26 @@ describe("createThing()", () => {
             property,
             1570467145138,
             1570467624125,
-            "2m",
-            "MEAN",
-            "none"
+            '2m',
+            'MEAN',
+            'none'
           )
           .then(result => {
-            console.log(JSON.stringify(result));
-            return result;
+            console.log(JSON.stringify(result))
+            return result
           })
           .catch(error => {
-            console.log(error.message);
-            return error;
-          });
-      }, 2000);
-    });
-  });
+            console.log(error.message)
+            return error
+          })
+      }, 2000)
+    })
+  })
 
-  after(function() {
+  after(function () {
     // runs after all tests in this block
     // this.influx.deleteStore().catch(error => {
     //   console.log(error);
     // });
-  });
-});
+  })
+})
